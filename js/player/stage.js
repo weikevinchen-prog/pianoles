@@ -11,9 +11,10 @@ import { C } from '../ui/colors.js';
  *       keyAspect    max. verhouding hoogte/breedte van een witte toets
  *       keyNames     'auto' (volgens instelling) | 'none' | 'c' (alleen de C's met octaafnummer)
  *       onFrame(dt)  wordt elke frame vóór het tekenen opgeroepen
+ *       fallTop      deel (0–1) bovenaan dat voor de notenbalk is (vallende noten eronder)
  */
 export function createStage(parent, opts = {}) {
-  const o = { lo: 48, hi: 83, keyRatio: 0.26, keyAspect: 5.2, keyNames: 'auto', onFrame: null, ...opts };
+  const o = { lo: 48, hi: 83, keyRatio: 0.26, keyAspect: 5.2, keyNames: 'auto', onFrame: null, fallTop: 0, ...opts };
   const el = document.createElement('div');
   el.className = 'stage';
   const cv = document.createElement('canvas');
@@ -35,6 +36,8 @@ export function createStage(parent, opts = {}) {
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     g = geometry(o.lo, o.hi, W || 1);
     keyTop = H - Math.min(H * o.keyRatio, g.ww * o.keyAspect);
+    // bovenste deel voor de notenbalk (weergave 'samen' of 'bladmuziek')
+    el.style.setProperty('--fall-top', `${Math.round(keyTop * o.fallTop)}px`);
   }
   const ro = new ResizeObserver(layout);
   ro.observe(el);
@@ -137,6 +140,7 @@ export function createStage(parent, opts = {}) {
   const api = {
     el, overlay,
     get W() { return W; }, get H() { return H; }, get keyTop() { return keyTop; }, get geom() { return g; },
+    get top() { return keyTop * o.fallTop; },
     x: m => g.x(m), w: m => g.w(m),
     setRange(lo, hi) { o.lo = lo; o.hi = hi; layout(); },
     get range() { return [g.lo, g.hi]; },

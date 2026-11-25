@@ -2,7 +2,9 @@
 // Je mag vrij spelen; "Verder" (of spatie) gaat door.
 import { C } from '../../ui/colors.js';
 import { illustration } from '../../ui/illustrations.js';
-import { fmt } from '../../ui/dom.js';
+import { parseTargets, noteName } from '../../core/notation.js';
+import { renderStatic } from '../../player/staff.js';
+import { fmt, textStyle } from '../../ui/dom.js';
 import { setupStage, applyMarks, showPanel, showHands } from './common.js';
 
 export default function explain(step, ctx) {
@@ -11,6 +13,20 @@ export default function explain(step, ctx) {
   if (step.position) showHands(ctx, step.position, () => step.activeFingers || {});
   if (step.illustration) {
     showPanel(ctx, `<div class="illus">${illustration(step.illustration)}${step.caption ? `<p>${fmt(step.caption)}</p>` : ''}</div>`);
+  }
+  // Notenbalk boven het klavier: staff: {clef, notes: 'C4 D4 E4', labels: true}
+  if (step.staff) {
+    ctx.stage.setOptions({ keyRatio: 0.42, keyAspect: 5.5, fallTop: 1 });
+    const host = showPanel(ctx, '<div class="staff-static"></div>', 'top').firstChild;
+    const ms = parseTargets(step.staff.notes || '').exact;
+    const opts = {
+      clef: step.staff.clef || 'treble', key: step.staff.key || 'C', duration: ms.length > 1 ? 'q' : 'w', notes: ms,
+      labels: step.staff.labels ? ms.map(m => noteName(m, textStyle(), step.staff.labels === 'oct')) : [],
+    };
+    const draw = () => renderStatic(host, opts).catch(e => { host.innerHTML = `<p class="staff-error">${e.message}</p>`; });
+    const ro = new ResizeObserver(draw);
+    ro.observe(host);
+    ctx.onCleanup(() => ro.disconnect());
   }
   ctx.prompt(ctx.fmt(step.text));
   return new Promise(resolve => {

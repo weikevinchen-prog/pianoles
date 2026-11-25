@@ -185,3 +185,25 @@ ol{padding-left:22px;margin:0}ol li{margin-bottom:4px}
 .hand-fig .finger:focus-visible{outline:none;stroke:var(--gold);stroke-width:5;stroke-opacity:1}
 .phase{display:inline-block;margin-top:2px;font-size:.92em;color:var(--muted);font-weight:700}
 .feedback .stars.small{letter-spacing:1px}
+
+/* ---------- fase 3: notenbalk ---------- */
+.staff-panel{position:absolute;left:0;right:0;top:0;height:var(--fall-top);background:#fffdf8;color:#1b1820;border-bottom:3px solid var(--gold);overflow:hidden}
+.staff-panel.staff{border-bottom:0}
+.staff-view{position:relative;width:100%;height:100%}
+.staff-svg{position:absolute;inset:0}
+.staff-svg svg{display:block}
+.staff-cursor{position:absolute;top:2px;left:0;width:3px;border-radius:2px;background:#f2b84bcc;pointer-events:none;transition:transform .08s linear}
+.staff-error{margin:0;padding:12px 16px;color:#6a6370;font-size:14px}
+.panel.top{bottom:auto;height:var(--fall-top);background:#fffdf8;color:#1b1820;padding:0}
+.staff-static{width:100%;height:100%}
+@media(prefers-reduced-motion:reduce){.staff-cursor{transition:none}}
+.chapter{padding:0}
+.chapter summary{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 16px;cursor:pointer;list-style:none}
+.chapter summary::-webkit-details-marker{display:none}
+.chapter summary::after{content:'▾';margin-left:auto;color:var(--muted);transition:transform .15s}
+.chapter[open] summary::after{transform:rotate(180deg)}
+.chapter.locked summary{opacity:.6}
+.ch-no{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);font-weight:800}
+.ch-t{display:flex;flex-direction:column;line-height:1.25}.ch-t b{font-size:17px}
+.ch-body{padding:0 16px 14px}
+.ch-intro{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ch-intro p{margin:0}

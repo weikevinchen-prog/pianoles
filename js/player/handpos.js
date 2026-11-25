@@ -43,14 +43,17 @@ export function createTracker(initial = {}) {
   return {
     pos,
     follow(notes) {
-      for (const n of notes) {
-        if (!n.finger || !n.hand) continue;
-        const map = pos[n.hand];
-        if (!map || map[n.finger] !== n.m) {
-          // Bij één verschoven vinger (bv. F# met vinger 4) enkel die vinger aanpassen.
-          const shift = map ? Math.abs(map[n.finger] - n.m) : 99;
-          pos[n.hand] = map && shift === 1 ? { ...map, [n.finger]: n.m } : anchor(n.hand, n.finger, n.m);
-        }
+      for (const hand of ['rh', 'lh']) {
+        const ns = notes.filter(n => n.hand === hand && n.finger);
+        if (!ns.length) continue;
+        const map = pos[hand];
+        if (map && ns.every(n => map[n.finger] === n.m)) continue;
+        // Eén vinger een halve toon verschoven (bv. F# met vinger 4): enkel die vinger aanpassen.
+        if (map && ns.length === 1 && Math.abs(map[ns[0].finger] - ns[0].m) === 1) { pos[hand] = { ...map, [ns[0].finger]: ns[0].m }; continue; }
+        // Anders: hand verplaatsen naar de eerste noot; bij akkoorden de andere vingers erbij zetten.
+        const next = anchor(hand, ns[0].finger, ns[0].m);
+        for (const n of ns) next[n.finger] = n.m;
+        pos[hand] = next;
       }
       return pos;
     },

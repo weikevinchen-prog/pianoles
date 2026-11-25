@@ -25,4 +25,32 @@ export default [
       },
     ],
   },
+  {
+    chapter: 'h3', title: 'Rechterhand',
+    steps: [{ type: 'piece', bpm: 88, position: { rh: 'C4' }, phases: ['wait'], text: 'Speel met rechts.', rh: 'E4/3 D4/2 C4/1 D4/2 | E4/3 E4/3 E4/3:2 | D4/2 D4/2 E4/3 D4/2 | C4/1:4' }],
+  },
+  {
+    chapter: 'h4', title: 'Linkerhand',
+    steps: [{ type: 'piece', bpm: 84, position: { lh: 'C3' }, phases: ['wait'], text: 'Speel met links.', lh: 'C3/5 E3/3 D3/4 F3/2 | E3/3 G3/1 G3/1:2 | F3/2 D3/4 E3/3 C3/5 | D3/4 D3/4 C3/5:2' }],
+  },
+  {
+    chapter: 'h5', title: 'Handen afwisselend',
+    steps: [{ type: 'piece', bpm: 80, position: { lh: 'C3', rh: 'C4' }, phases: ['wait'], text: 'Om beurten.', rh: 'C4/1 E4/3 G4/5:2 | R:4 | E4/3 D4/2 C4/1:2 | R:4', lh: 'R:4 | G3/1 E3/3 C3/5:2 | R:4 | D3/4 E3/3 C3/5:2' }],
+  },
+  {
+    chapter: 'h6', title: 'Ritme',
+    steps: [{ type: 'piece', bpm: 80, anyKey: true, metronome: true, position: { rh: 'C4' }, phases: ['tempo'], text: 'Speel dit ritme op één toets, mee met de metronoom.', rh: 'C4/1 C4/1:.5 C4/1:.5 C4/1:2 | C4/1:1.5 C4/1:.5 C4/1 R | C4/1:4' }],
+  },
+  {
+    chapter: 'h7', title: 'Noten lezen (vioolsleutel)',
+    steps: [{ type: 'staffquiz', clef: 'treble', range: 'C3 C6', names: 'c', pool: 'C4 D4 E4 F4 G4 A4 B4 C5', rounds: 6 }],
+  },
+  {
+    chapter: 'h8', title: 'Handen samen',
+    steps: [{ type: 'piece', bpm: 72, position: { lh: 'C3', rh: 'C4' }, phases: ['wait'], text: 'Twee handen tegelijk.', rh: 'C4/1 D4/2 E4/3 F4/4 | G4/5:4 | G4/5 F4/4 E4/3 D4/2 | C4/1:4', lh: 'C3/5:4 | E3/3:2 G3/1:2 | G3/1:4 | C3/5:4' }],
+  },
+  {
+    chapter: 'h9', title: 'Noten lezen (bassleutel)',
+    steps: [{ type: 'staffquiz', clef: 'bass', range: 'C2 C4', names: 'c', pool: 'G2 A2 B2 C3 D3 E3 F3 G3', rounds: 6 }],
+  },
 ];

@@ -1,6 +1,6 @@
 // Cursusoverzicht: hoofdstukken, lessen, sterren en sloten.
 import * as store from '../core/storage.js';
-import { chapters, isUnlocked, passed, courseStats } from '../lesson/course.js';
+import { chapters, isUnlocked, passed, courseStats, firstOpen } from '../lesson/course.js';
 import { UPCOMING } from '../data/course.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
 
@@ -8,6 +8,7 @@ export function render(root) {
   setTitle('Cursus');
   const prog = store.get().lessons;
   const cs = courseStats(prog);
+  const cur = firstOpen(prog);
   const chapterHtml = (ch, ci) => {
     const examId = ch.lessons.find(l => l.exam)?.id;
     const allPassed = ch.lessons.every(l => passed(prog[l.id]));
@@ -20,13 +21,19 @@ export function render(root) {
       return `<li>${open ? `<a class="${cls}" href="#/les/${esc(l.id)}">${inner}</a>` : `<span class="${cls}" aria-disabled="true">${inner}</span>`}</li>`;
     }).join('');
     const canExam = examId && !allPassed && isUnlocked(examId, prog) && !passed(prog[examId]);
-    return `<section class="chapter card">
-      <header>
-        <div><small class="muted">Hoofdstuk ${ci + 1}</small><h3>${esc(ch.title)}</h3><p class="muted small">${esc(ch.intro || '')}</p></div>
-        ${canExam ? `<a class="btn small" href="#/les/${esc(examId)}">Ik ken dit al → examen</a>` : ''}
-      </header>
-      <ol class="lessons">${items}</ol>
-    </section>`;
+    const done = ch.lessons.filter(l => passed(prog[l.id])).length;
+    const isCur = cur && ch.lessons.some(l => l.id === cur.id);
+    const locked = !isUnlocked(ch.lessons[0].id, prog);
+    return `<details class="chapter card${locked ? ' locked' : ''}"${isCur ? ' open' : ''}>
+      <summary>
+        <span class="ch-no">${allPassed ? '✓' : ci + 1}</span>
+        <span class="ch-t"><b>${esc(ch.title)}</b><small class="muted">${done}/${ch.lessons.length} lessen${locked ? ' · 🔒' : ''}</small></span>
+      </summary>
+      <div class="ch-body">
+        <div class="ch-intro"><p class="muted small">${esc(ch.intro || '')}</p>${canExam ? `<a class="btn small" href="#/les/${esc(examId)}">Ik ken dit al → examen</a>` : ''}</div>
+        <ol class="lessons">${items}</ol>
+      </div>
+    </details>`;
   };
   root.innerHTML = `
   <div class="page course">

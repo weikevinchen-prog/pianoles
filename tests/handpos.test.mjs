@@ -26,6 +26,14 @@ test('anker en meevolgen (duim onderdoor)', () => {
   assert.equal(t.pos.rh[4], n('F#4'));
 });
 
+test('akkoord met uitgerekte vinger', () => {
+  const t = createTracker({ rh: fivePosition('C4', 'rh') });
+  t.follow([{ hand: 'rh', finger: 1, m: n('C4') }, { hand: 'rh', finger: 4, m: n('F4') }, { hand: 'rh', finger: 5, m: n('A4') }]);
+  assert.equal(t.pos.rh[1], n('C4'));
+  assert.equal(t.pos.rh[4], n('F4'));
+  assert.equal(t.pos.rh[5], n('A4'));
+});
+
 test('positie afleiden uit de noten', () => {
   const p = initialPositions(null, [{ hand: 'rh', finger: 3, m: n('E4') }]);
   assert.deepEqual(p.rh, fivePosition('C4', 'rh'));

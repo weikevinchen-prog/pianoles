@@ -53,7 +53,8 @@ js/player/              engine (wacht/tempo/voorspelen + scoring), stage (canvas
 js/ui/                  colors, dom, hands (SVG-handen), illustrations (houdingskaartjes)
 js/lesson/              course (vergrendeling, sterren), runner (stappen afspelen), steps/ (staptypes)
 js/screens/             één module per scherm
-js/data/                course.js (lessen), songs.js (liedjes), placement.js (instaptest)
+js/data/                course.js (voegt de hoofdstukken samen), chapters/h01.js … h15.js (lessen per hoofdstuk),
+                        songs.js (liedjes), placement.js (instaptest)
 tests/                  node-tests + rooktest
 ```
 
@@ -95,7 +96,7 @@ Draai daarna `node --test "tests/*.test.mjs"`. Die controleert of alles parset e
 
 ## Lessen toevoegen
 
-In `js/data/course.js`: hoofdstukken → lessen → stappen. Elke les heeft een unieke `id`. Een les met `exam: true` is het hoofdstukexamen: haal je daar minstens 1 ster, dan worden alle lessen van het hoofdstuk vrijgegeven.
+In `js/data/chapters/hNN.js` (één bestand per hoofdstuk; nieuwe hoofdstukken voeg je toe in `js/data/course.js`): hoofdstukken → lessen → stappen. Elke les heeft een unieke `id`. Een les met `exam: true` is het hoofdstukexamen: haal je daar minstens 1 ster, dan worden alle lessen van het hoofdstuk vrijgegeven.
 
 ```js
 {
@@ -119,12 +120,14 @@ Tekst: `**vet**`, `{C}` = notennaam volgens de instelling (C of do), `{C4}` = me
 | `name` | een toets licht op, kies de naam | `pool`, `rounds` |
 | `fingers` | vingernummers op de handtekening | `hand: rh \| lh \| both`, `mode: tap` (tik vinger N aan) of `mode: name` (welk nummer heeft de gouden vinger?), `rounds` |
 | `fingerplay` | "Speel met vinger 3 van je rechterhand" | `position`, `pool: 'R1 R3 L5'` (standaard alle vingers), `rounds` |
-| `piece` | stukje met vallende noten, in fases | `rh`, `lh` (notenstring met vingers), `bpm`, `meter`, `phases: ['demo', 'wait', 'tempo']`, `hands: both \| rh \| lh` (de andere hand speelt de app), `position`, `range` |
+| `piece` | stukje met vallende noten en/of notenbalk, in fases | `rh`, `lh` (notenstring met vingers), `bpm`, `meter`, `pickup` (tellen in de opmaat), `key` (`'G'`, `'F'`, `'Am'` …), `phases: ['demo', 'wait', 'tempo']`, `hands: both \| rh \| lh` (de andere hand speelt de app), `view: falling \| both \| staff`, `metronome: true`, `anyKey: true` (ritme: elke toets telt, alleen de timing), `position`, `range` |
+| `staffquiz` | noot op de notenbalk → speel hem | `clef: treble \| bass \| grand`, `pool: 'C4 D4 E4'`, `rounds`, `octave: false` (octaaf maakt niet uit), `key` |
 
 Gemeenschappelijk:
 - `range: 'C3 B4'`: het zichtbare klavier.
 - `names: 'none' | 'c' | 'auto'`: namen op de toetsen.
 - `position: { rh: 'C4', lh: 'C3' }`: handpositie. Er verschijnt dan een kleine hand met vingernummers boven het klavier. `'C4'` is de laagste toets van een 5-vingerpositie op witte toetsen. Bij de rechterhand ligt daar de duim, bij de linkerhand de pink. Je kunt ook 5 noten geven: `'D4 E4 F#4 G4 A4'`.
+- `explain` kan een notenbalk tonen: `staff: { clef: 'treble' | 'bass' | 'grand', notes: 'C4 D4 E4', labels: true | 'oct' }`.
 - `explain` kan ook `illustration` tonen: `hands`, `zithoogte`, `schouders`, `ronde-vingers` of `polsen` (zie `js/ui/illustrations.js`).
 
 **De fases van `piece`:**
@@ -133,6 +136,14 @@ Gemeenschappelijk:
 - `tempo`: je speelt op tempo mee.
 
 Na een oefenfase met minstens 2 sterren gaat de app vanzelf door naar de volgende fase. De score van de stap is je beste poging in de laatste beoordeelde fase. In elk blokje staat het vingernummer. Tijdens het spelen staan de vingertoppen op de toetsen, en de vinger die nu moet spelen licht goud op. Als de vingerzetting dat vraagt (bv. duim onderdoor), schuift de hand mee.
+
+**Notenbalk:** VexFlow 4.2.5 komt van jsDelivr (met SRI-hash) en wordt pas geladen als er een notenbalk nodig is. Zonder internet zie je een melding en kun je verder met de vallende noten. De weergave per stap (`view`) kun je onder Instellingen overschrijven: "altijd vallende noten", "altijd beide" of "altijd alleen bladmuziek".
+
+**Regels voor lesstukjes:** de unit-tests controleren dit voor elk stukje.
+- Elke noot heeft een vingernummer.
+- Elke maat heeft het juiste aantal tellen.
+- Dezelfde toets komt nooit twee keer op hetzelfde moment voor (anders loopt de wachtmodus vast).
+- Het stukje is als notenbalk op te bouwen.
 
 **Een les vanaf een bepaalde stap starten:** `#/les/h2-l3/5` begint bij stap 5. Handig om te testen.
 
@@ -148,7 +159,7 @@ Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instelling
 
 - [x] Fase 1: structuur, verbinden, kalibratie, hoofdstuk 1 "Het klavier terugvinden", instaptest-skelet
 - [x] Fase 2: handen en vingerzetting, hoofdstuk 2 "Handen en houding"
-- [ ] Fase 3: volledige cursus + notenbalk (VexFlow)
+- [x] Fase 3: volledige cursus (15 hoofdstukken, 92 lessen) + notenbalk (VexFlow), metronoom, ritme- en leesoefeningen
 - [ ] Fase 4: dagelijkse opwarming + metronoom
 - [ ] Fase 5: liedjesbibliotheek + oefentools
 - [ ] Fase 6: afwerking (voortgang, instellingen, animaties)

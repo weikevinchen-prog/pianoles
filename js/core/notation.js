@@ -67,10 +67,12 @@ export function parseVoice(str, { beatsPerMeasure = 4 } = {}) {
 }
 
 /** Een stuk ({rh, lh} of een losse string = rechterhand) -> noten in seconden, gesorteerd. */
-export function buildPiece(piece, { bpm = 90, meter = [4, 4], gap = 0.92 } = {}) {
+export function buildPiece(piece, { bpm = 90, meter = [4, 4], gap = 0.92, pickup = 0 } = {}) {
   const voices = typeof piece === 'string' ? { rh: piece } : (piece || {});
   const spb = 60 / bpm, perBar = meter[0]; // 1 tel = de noemer van de maatsoort
   const notes = [], warnings = [];
+  // maatnummer (0-gebaseerd); met een opmaat is maat 0 de opmaat
+  const measureOf = b => (pickup > 0 ? (b < pickup - 1e-6 ? 0 : Math.floor((b - pickup) / perBar + 1e-6) + 1) : Math.floor(b / perBar + 1e-6));
   let beats = 0;
   for (const hand of ['rh', 'lh']) {
     if (!voices[hand]) continue;
@@ -80,12 +82,12 @@ export function buildPiece(piece, { bpm = 90, meter = [4, 4], gap = 0.92 } = {})
     for (const n of v.notes) {
       notes.push({
         m: n.m, t: n.b * spb, d: Math.max(0.08, n.bd * spb * gap), b: n.b, bd: n.bd,
-        hand, finger: n.finger, measure: Math.floor(n.b / perBar + 1e-6),
+        hand, finger: n.finger, measure: measureOf(n.b),
       });
     }
   }
   notes.sort((a, b) => a.t - b.t || a.m - b.m);
-  return { notes, bpm, meter, beats, measures: Math.ceil(beats / perBar - 1e-6), warnings };
+  return { notes, bpm, meter, pickup, beats, measures: notes.length ? measureOf(beats - 1e-3) + 1 : 0, warnings };
 }
 
 /** 'C2 C6' -> [36, 84] (uitgebreid tot witte toetsen) */

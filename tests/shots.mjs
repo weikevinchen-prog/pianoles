@@ -1,6 +1,6 @@
 // Screenshots voor visuele controle (iPhone liggend, 844×390), met alle lessen vrijgegeven.
 // Gebruik:  node tests/shots.mjs <uitvoermap> "#/les/h2-l1" "#/les/h2-l3|click:#lCtl button" …
-// Na '|' volgen acties gescheiden door '|': click:<selector>, note:<midi>, wait:<ms>.
+// Na '|' volgen acties gescheiden door '|': click:<selector>, note:<midi>, wait:<ms>, js:<code>.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -44,6 +44,7 @@ try {
       if (k === 'click') await ev(`document.querySelector(${JSON.stringify(v)})?.click()`);
       if (k === 'note') await ev(`pianoles.input.noteOn(${v},.8,'midi');pianoles.input.noteOff(${v},'midi')`);
       if (k === 'wait') await sleep(+v);
+      if (k === 'js') await ev(`{${v}}`);
       await sleep(250);
     }
     const shot = await send('Page.captureScreenshot', { format: 'png' });

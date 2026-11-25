@@ -24,11 +24,13 @@ export function summarize(results) {
  * opts.startAt      beginnen bij deze stap (0-gebaseerd)
  */
 export function createRunner(steps, view, opts = {}) {
-  let aborted = false, subs = [], timers = [];
+  let aborted = false, subs = [], timers = [], cleanups = [];
 
   function cleanStep() {
     subs.forEach(u => u());
     subs = [];
+    cleanups.forEach(f => { try { f(); } catch (e) { console.error(e); } });
+    cleanups = [];
     timers.forEach(clearTimeout);
     timers = [];
     view.controls.innerHTML = '';
@@ -58,6 +60,7 @@ export function createRunner(steps, view, opts = {}) {
       settings: () => getStore().settings,
       onNote(fn) { if (!aborted) subs.push(bus.on('noteon', fn)); },
       onSpace(fn) { if (!aborted) subs.push(bus.on('space', fn)); },
+      onCleanup(fn) { cleanups.push(fn); },
       later(fn, ms) { if (!aborted) timers.push(setTimeout(() => { if (!aborted) fn(); }, ms)); },
       get aborted() { return aborted; },
     };

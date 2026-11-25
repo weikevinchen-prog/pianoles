@@ -7,6 +7,7 @@ const OPTS = {
   names: [['abc', 'C D E'], ['do', 'do re mi'], ['off', 'Geen namen']],
   sound: [['auto', 'Automatisch (stil als de piano via MIDI speelt)'], ['on', 'Altijd aan'], ['off', 'Uit']],
   theme: [['auto', 'Volgens toestel'], ['light', 'Licht'], ['dark', 'Donker']],
+  view: [['auto', 'Zoals de les het vraagt'], ['falling', 'Altijd vallende noten'], ['both', 'Altijd notenbalk + vallende noten'], ['staff', 'Altijd alleen bladmuziek']],
 };
 
 export function render(root) {
@@ -20,6 +21,7 @@ export function render(root) {
       ${sel('names', 'Notennamen')}
       ${sel('sound', 'App-geluid bij jouw noten')}
       ${sel('theme', 'Thema')}
+      ${sel('view', 'Weergave bij stukjes')}
     </section>
     <section class="card">
       <h3>Back-up van je voortgang</h3>

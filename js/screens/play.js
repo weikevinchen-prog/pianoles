@@ -10,6 +10,7 @@ import { createEngine } from '../player/engine.js';
 import { fallingLayer } from '../player/falling.js';
 import { handLayer, engineHands } from '../player/handlayer.js';
 import { fitRange } from '../player/keyboard.js';
+import { attachView, resolveView } from '../player/views.js';
 import { C } from '../ui/colors.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
 
@@ -23,6 +24,11 @@ export function render(root) {
         <option value="wait">Wachtmodus</option>
         <option value="play">Op tempo</option>
         <option value="demo">Voorspelen</option>
+      </select>
+      <select id="view" aria-label="Weergave">
+        <option value="falling">Vallende noten</option>
+        <option value="both">Notenbalk + vallend</option>
+        <option value="staff">Bladmuziek</option>
       </select>
       <button class="main" id="btnPlay">▶ Start</button>
       <button id="btnRestart" aria-label="Opnieuw">↺</button>
@@ -38,14 +44,17 @@ export function render(root) {
     <div class="msg" id="msg"><b>Klaar om te spelen?</b><span>Kies een liedje en druk op Start (of spatie). In de wachtmodus wacht het liedje tot je de juiste toets speelt.</span></div>
     <div class="done" id="done"><div><div class="stars big" id="stars"></div><h2 id="doneTitle"></h2><p id="doneTxt"></p><button class="main" id="btnAgain">Nog eens</button></div></div>`;
 
-  let engine = null, songId = SONGS[0].id;
+  let engine = null, songId = SONGS[0].id, view = null, meta = null;
+  q('#view').value = resolveView('falling');
 
   function upd(e) {
     const { hit, wrong, miss, streak } = e.st, tot = hit + wrong + miss;
     q('#stats').textContent = `Juist ${hit} · Fout ${wrong + miss} · Reeks ${streak} · ${tot ? Math.round(hit / tot * 100) + '%' : '–'}`;
     q('#btnPlay').textContent = e.playing ? '⏸ Pauze' : e.clock > -2.5 && !e.finished ? '▶ Verder' : '▶ Start';
   }
-  function load(notes) {
+  // meta = {bpm, meter, pickup, key} voor liedjes uit de bibliotheek; null voor MIDI-bestanden (geen notenbalk)
+  function load(notes, m = null) {
+    meta = m;
     const s = store.get().settings;
     engine = createEngine(notes, {
       mode: q('#mode').value,
@@ -62,13 +71,22 @@ export function render(root) {
     const [lo, hi] = fitRange(notes);
     stage.setRange(lo, hi);
     stage.setLayers([fallingLayer(engine), handLayer(engineHands(engine), { onKeys: true })]);
+    setView();
     q('#msg').style.display = '';
     q('#done').classList.remove('show');
   }
   function loadSong(id) {
     const song = SONGS.find(s => s.id === id) || SONGS[0];
     songId = song.id;
-    load(buildPiece(song.versions.melody, { bpm: song.bpm, meter: song.meter }).notes);
+    const meter = song.meter || [4, 4], pickup = song.pickup || 0;
+    load(buildPiece(song.versions.melody, { bpm: song.bpm, meter, pickup }).notes, { bpm: song.bpm, meter, pickup, key: song.key || 'C' });
+  }
+  function setView() {
+    view?.destroy();
+    q('#view').disabled = !meta;
+    const grand = engine.notes.some(n => n.hand === 'lh') && engine.notes.some(n => n.hand === 'rh');
+    view = attachView(stage, meta ? { view: q('#view').value, ...meta, grand } : { view: 'falling' });
+    view.setEngine(engine);
   }
   function toggle() {
     ensureAudio();
@@ -116,7 +134,8 @@ export function render(root) {
     e.target.value = '';
   };
 
-  stage.onFrame = dt => engine && engine.update(dt);
+  q('#view').onchange = setView;
+  stage.onFrame = dt => { if (!engine) return; engine.update(dt); view?.update(); };
   const offs = [
     bus.on('noteon', ({ m }) => {
       const r = engine && engine.noteOn(m);
@@ -125,5 +144,5 @@ export function render(root) {
     bus.on('space', toggle),
   ];
   loadSong(songId);
-  return () => { offs.forEach(f => f()); stage.destroy(); };
+  return () => { offs.forEach(f => f()); view?.destroy(); stage.destroy(); };
 }

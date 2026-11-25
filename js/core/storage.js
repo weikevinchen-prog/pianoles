@@ -17,6 +17,7 @@ export function defaults() {
       lhColor: '#e0644f',  // linkerhand: koraal
       latency: 0,          // ms, latency-compensatie voor de modus "op tempo"
       effects: true,       // animaties en geluidjes bij sterren
+      view: 'auto',        // stukjes: 'auto' (zoals de les het vraagt) | 'falling' | 'both' | 'staff'
     },
     lessons: {},           // id -> {stars, best, status: 'done'|'skipped'|'tried', date, tries}
     songs: {},             // 'songId/versie/modus' -> {best, stars, date}

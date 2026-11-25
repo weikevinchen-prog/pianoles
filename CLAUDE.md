@@ -9,13 +9,13 @@ Piano-leerapp in de stijl van Simply Piano, voor één gebruiker. Die speelde vr
 
 ## Technische regels
 - Puur statisch voor GitHub Pages: HTML + CSS + vanilla JS (ES modules). **Geen build-stap, geen npm, geen backend.**
-- Externe libraries alleen als ze echt veel werk besparen, met een vaste versie via CDN (gepland: VexFlow voor de notenbalk, lui laden).
+- Externe libraries alleen als ze echt veel werk besparen, met een vaste versie via CDN. Nu alleen VexFlow 4.2.5 (jsDelivr + SRI-hash, lui geladen in `js/player/staff.js`). Wil je updaten, bereken dan de nieuwe hash (`openssl dgst -sha384 -binary vexflow.js | openssl base64 -A`).
 - Opslag: `localStorage` sleutel `pianoles:v1` via `js/core/storage.js` (altijd try/catch), met export/import als JSON.
 - Input loopt via `js/core/input.js` → bus-events `noteon`/`noteoff`/`pedal`/`space`. Schermen luisteren daarnaar, nooit rechtstreeks naar MIDI.
 - Komt een noot via MIDI binnen, dan speelt de app **zelf geen geluid**. Voorspelen en begeleiding wel (Web Audio).
 - Handkleuren: rechts turkoois `#2bb3a3`, links koraal `#e0644f`. Goud = nu spelen, groen = juist, rood = fout. Overal consistent (`js/ui/colors.js`).
 - **Copyright:** alleen publiek-domeinmuziek (traditionals, kinderliedjes, klassiek). Geen moderne popsongs.
-- Lessen en liedjes zijn data in `js/data/*.js`, in het formaat uit README.md. Houd de README bij als het formaat verandert.
+- Lessen en liedjes zijn data in `js/data/` (lessen per hoofdstuk in `js/data/chapters/hNN.js`), in het formaat uit README.md. Houd de README bij als het formaat verandert. Muziek in lessen moet kloppen (maten, vingerzetting); de tests vangen veel fouten op.
 - Respecteer `prefers-reduced-motion`. Animaties en geluidjes blijven rustig en uit te zetten.
 - Breek nooit: de vallende-noten-speler (Vrij spelen), de MIDI-verbinding en de MIDI-bestand-import.
 

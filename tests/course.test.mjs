@@ -7,8 +7,10 @@ import STEP_TYPES_LIST from './step-types.mjs';
 import { flat, isUnlocked, recordLesson, firstOpen, courseStats, skipChapter } from '../js/lesson/course.js';
 import { parseRange, parseTargets, buildPiece, pcNum, noteNum } from '../js/core/notation.js';
 import { fivePosition } from '../js/player/handpos.js';
+import { toMeasures } from '../js/core/staffdata.js';
 
 const ILLU = ['zithoogte', 'ronde-vingers', 'polsen', 'schouders', 'hands'];
+const VIEWS = [undefined, 'falling', 'both', 'staff'];
 
 function checkStep(s, where) {
   assert.ok(STEP_TYPES_LIST.includes(s.type), `${where}: onbekend staptype ${s.type}`);
@@ -19,12 +21,21 @@ function checkStep(s, where) {
   if (['explain', 'find'].includes(s.type)) assert.ok(s.text, `${where}: tekst ontbreekt`);
   for (const [h, spec] of Object.entries(s.position || {})) assert.equal(Object.keys(fivePosition(spec, h)).length, 5, `${where}: positie`);
   if (s.type === 'piece') {
-    const p = buildPiece({ rh: s.rh, lh: s.lh }, { bpm: s.bpm || 80, meter: s.meter || [4, 4] });
+    const p = buildPiece({ rh: s.rh, lh: s.lh }, { bpm: s.bpm || 80, meter: s.meter || [4, 4], pickup: s.pickup || 0 });
     assert.ok(p.notes.length > 0, `${where}: geen noten`);
     assert.deepEqual(p.warnings, [], `${where}: ${p.warnings.join('; ')}`);
     assert.ok(p.notes.every(x => x.finger), `${where}: lesstukjes hebben overal vingerzetting`);
+    // dezelfde toets twee keer op hetzelfde moment (bv. beide handen) zou de wachtmodus laten vastlopen
+    const seen = new Set();
+    for (const x of p.notes) { const k = `${x.b}:${x.m}`; assert.ok(!seen.has(k), `${where}: dubbele noot ${x.m} op tel ${x.b}`); seen.add(k); }
+    const st = toMeasures(p.notes, { meter: s.meter || [4, 4], pickup: s.pickup || 0 });
+    assert.ok(st.measures.length >= 1, `${where}: notenbalk`);
+    if (s.metronome) assert.ok(s.bpm, `${where}: metronoom vraagt een bpm`);
   }
   if (s.illustration) assert.ok(ILLU.includes(s.illustration), `${where}: onbekende illustratie ${s.illustration}`);
+  assert.ok(VIEWS.includes(s.view), `${where}: onbekende weergave ${s.view}`);
+  if (s.type === 'staffquiz') assert.ok(['treble', 'bass', 'grand', undefined].includes(s.clef), `${where}: sleutel`);
+  if (s.staff) assert.ok(parseTargets(s.staff.notes).exact.length > 0, `${where}: notenbalk zonder noten`);
 }
 
 test('lesdata is geldig en ids zijn uniek', () => {

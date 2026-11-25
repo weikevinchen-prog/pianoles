@@ -7,5 +7,6 @@ import name from './name.js';
 import fingers from './fingers.js';
 import fingerplay from './fingerplay.js';
 import piece from './piece.js';
+import staffquiz from './staffquiz.js';
 
-export default { explain, find, quiz, name, fingers, fingerplay, piece };
+export default { explain, find, quiz, name, fingers, fingerplay, piece, staffquiz };

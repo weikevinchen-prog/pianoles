@@ -177,6 +177,33 @@ try {
   await note(60, 300);
   await go('#/', 300);
 
+  // ---------- fase 3 ----------
+  await evaluate(`import('./js/lesson/course.js').then(c=>pianoles.store.update(s=>{for(const x of c.flat())s.lessons[x.lesson.id]={stars:1,status:'done'}}))`);
+  // notenleesquiz: twee keer fout -> de naam verschijnt onder de noot -> die spelen
+  await go('#/les/h7-l2/2', 2500);
+  check(await evaluate('!!document.querySelector(".panel.top svg")'), 'leesquiz tekent een notenbalk (VexFlow geladen)');
+  await note(30, 150); await note(30, 400);
+  const lbl = await evaluate(`[...document.querySelectorAll('.panel.top svg text')].map(t=>t.textContent).find(t=>/^[A-G]\\d$/.test(t))||''`);
+  const PC2 = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  if (lbl) await note((+lbl[1] + 1) * 12 + PC2[lbl[0]], 300);
+  check(lbl && (await evaluate('document.getElementById("lFb").className')).includes('ok'), `leesquiz: hint (${lbl}) en juiste noot`);
+  // stuk met notenbalk boven vallende noten
+  await go('#/les/h7-l5/2', 3000);
+  check(await evaluate('!!document.querySelector(".staff-panel .staff-svg svg")'), 'weergave "samen": notenbalk zichtbaar');
+  check(await evaluate('document.querySelectorAll(".staff-panel .vf-stavenote").length') > 4, 'notenbalk bevat noten');
+  // Für Elise: opmaat, 3/8, twee handen
+  await go('#/les/h15-l3/2', 3000);
+  check(await evaluate('document.querySelectorAll(".staff-panel .vf-stavenote").length') > 4, 'Für Elise (3/8 met opmaat) rendert');
+  // ritme met metronoom (anyKey)
+  await go('#/les/h6-l1/2', 400);
+  await evaluate('[...document.querySelectorAll("#lCtl button")].find(b=>b.textContent.startsWith("Overslaan"))?.click()');
+  await sleep(2600);
+  await note(70, 200);
+  check(/Juist|eigen|tempo/i.test(await text('#lPrompt')), 'ritme-oefening loopt');
+  await go('#/cursus', 400);
+  check(await evaluate('document.querySelectorAll("details.chapter").length') === 15, 'cursus toont 15 hoofdstukken');
+  await go('#/', 200);
+
   // Export/import van voortgang
   const json = await evaluate('pianoles.store.exportJSON()');
   await evaluate('pianoles.store.resetAll()');

@@ -14,6 +14,7 @@ export function createEngine(list, opts = {}) {
     tempo: opts.tempo || 1,
     hands: opts.hands || 'both',
     latency: opts.latency || 0,           // ms
+    anyKey: !!opts.anyKey,                // ritmeoefening: elke toets telt, enkel de timing
     playTone: opts.playTone || (() => {}),
     onFinish: opts.onFinish || (() => {}),
     onChange: opts.onChange || (() => {}),
@@ -92,7 +93,7 @@ export function createEngine(list, opts = {}) {
       if (g) {
         meas = e.notes[g.idx[0]].measure;
         if (g.t - e.clock < WAIT_WIN) {
-          const i = g.idx.find(i => e.notes[i].m === m && !e.notes[i].hit);
+          const i = g.idx.find(i => (e.anyKey || e.notes[i].m === m) && !e.notes[i].hit);
           if (i !== undefined) {
             e.notes[i].hit = true;
             ok = true;
@@ -107,7 +108,7 @@ export function createEngine(list, opts = {}) {
         if (!isActive(n)) continue;
         const dd = Math.abs(n.t - c);
         if (!near || dd < Math.abs(near.t - c)) near = n;
-        if (n.hit || n.miss || n.m !== m) continue;
+        if (n.hit || n.miss || (!e.anyKey && n.m !== m)) continue;
         if (dd < PLAY_WIN && (!best || dd < Math.abs(best.t - c))) best = n;
       }
       if (best) {
