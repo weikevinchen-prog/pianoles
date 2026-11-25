@@ -52,15 +52,25 @@ test('lesdata is geldig en ids zijn uniek', () => {
   for (const p of PROBES) p.steps.forEach((s, i) => checkStep(s, `instaptest ${p.chapter} stap ${i + 1}`));
 });
 
-test('liedjes parsen zonder fouten', () => {
+test('liedjes: minstens 25, drie niveaus, alle versies geldig', () => {
+  assert.ok(SONGS.length >= 25, `${SONGS.length} liedjes`);
+  for (const lvl of [1, 2, 3]) assert.ok(SONGS.some(s => s.level === lvl), `niveau ${lvl}`);
   const ids = new Set();
   for (const s of SONGS) {
-    assert.ok(!ids.has(s.id));
+    assert.ok(!ids.has(s.id), `dubbele id ${s.id}`);
     ids.add(s.id);
+    assert.ok(s.title && s.composer && s.bpm, s.id);
+    assert.ok(s.versions.melody && s.versions.easy, `${s.id}: melodie en eenvoudige versie`);
+    assert.ok(!s.versions.melody.lh, `${s.id}: melodieversie is alleen RH`);
     for (const [v, piece] of Object.entries(s.versions)) {
-      const p = buildPiece(piece, { bpm: s.bpm, meter: s.meter });
-      assert.ok(p.notes.length > 0, `${s.id}/${v}`);
-      assert.deepEqual(p.warnings, [], `${s.id}/${v}: ${p.warnings.join('; ')}`);
+      const where = `${s.id}/${v}`;
+      const p = buildPiece(piece, { bpm: s.bpm, meter: s.meter, pickup: s.pickup || 0 });
+      assert.ok(p.notes.length > 0, where);
+      assert.deepEqual(p.warnings, [], `${where}: ${p.warnings.join('; ')}`);
+      const seen = new Set();
+      for (const x of p.notes) { const k = `${x.b}:${x.m}`; assert.ok(!seen.has(k), `${where}: dubbele noot ${x.m} op tel ${x.b}`); seen.add(k); }
+      toMeasures(p.notes, { meter: s.meter, pickup: s.pickup || 0 });
+      if (v !== 'melody') assert.ok(p.notes.some(n => n.hand === 'lh'), `${where}: linkerhand ontbreekt`);
     }
   }
 });

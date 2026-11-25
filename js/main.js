@@ -15,7 +15,8 @@ import * as placement from './screens/placement.js';
 import * as play from './screens/play.js';
 import * as settings from './screens/settings.js';
 import * as progress from './screens/progress.js';
-import * as soon from './screens/soon.js';
+import * as songs from './screens/songs.js';
+import * as song from './screens/song.js';
 import * as workout from './screens/workout.js';
 import * as metronome from './screens/metronome.js';
 
@@ -27,7 +28,8 @@ const ROUTES = {
   les: { mod: lesson, parent: 'cursus' },
   instaptest: { mod: placement, parent: 'cursus' },
   spelen: { mod: play, parent: '' },
-  liedjes: { mod: soon, parent: '', args: ['liedjes'] },
+  liedjes: { mod: songs, parent: '' },
+  liedje: { mod: song, parent: 'liedjes' },
   opwarming: { mod: workout, parent: '' },
   metronoom: { mod: metronome, parent: 'opwarming' },
   voortgang: { mod: progress, parent: '' },

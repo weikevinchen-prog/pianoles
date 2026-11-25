@@ -38,6 +38,7 @@ export function createStage(parent, opts = {}) {
     keyTop = H - Math.min(H * o.keyRatio, g.ww * o.keyAspect);
     // bovenste deel voor de notenbalk (weergave 'samen' of 'bladmuziek')
     el.style.setProperty('--fall-top', `${Math.round(keyTop * o.fallTop)}px`);
+    el.style.setProperty('--key-top', `${Math.round(keyTop)}px`);
   }
   const ro = new ResizeObserver(layout);
   ro.observe(el);

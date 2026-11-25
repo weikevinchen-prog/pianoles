@@ -53,7 +53,7 @@ js/player/              engine (wacht/tempo/voorspelen + scoring), stage (canvas
 js/ui/                  colors, dom, hands (SVG-handen), illustrations (houdingskaartjes)
 js/lesson/              course (vergrendeling, sterren), runner (stappen afspelen), steps/ (staptypes)
 js/workout/generator.js stelt de dagelijkse opwarming samen
-js/screens/             één module per scherm
+js/screens/             één module per scherm (songs = bibliotheek, song = oefenspeler)
 js/data/                course.js (voegt de hoofdstukken samen), chapters/h01.js … h15.js (lessen per hoofdstuk),
                         songs.js (liedjes), placement.js (instaptest), exercises.js (vingeroefeningen,
                         toonladders, arpeggio's)
@@ -94,7 +94,26 @@ In `js/data/songs.js`. Gebruik **alleen publiek domein** (traditionals, klassiek
 },
 ```
 
-Draai daarna `node --test "tests/*.test.mjs"`. Die controleert of alles parset en of de maten kloppen.
+Extra velden:
+- `pickup`: tellen in de opmaat;
+- `key`: toonsoort voor de notenbalk (`'G'`, `'F'`, `'Am'` …);
+- `meter`: maatsoort, bv. `[6, 8]`, waarbij één tel = een achtste.
+
+`melody` (alleen RH) en `easy` (met LH) zijn verplicht, `full` is optioneel. Vingerzetting is bij liedjes optioneel; zonder vingers verschijnt er geen hand op het klavier. Dezelfde toets mag niet twee keer op hetzelfde moment staan (bv. in beide handen), anders loopt de wachtmodus vast.
+
+Draai daarna `node --test "tests/*.test.mjs"`. Die controleert per versie of alles parset, of de maten kloppen, of de notenbalk lukt en of er dubbele noten zijn.
+
+### Oefenen met een liedje (`#/liedje/<id>`)
+- **Modus:** wachtmodus, op tempo of voorspelen.
+- **Handen:** beide, alleen rechts of alleen links. De app speelt de andere hand.
+- **Tempo:** 40–150 % in stappen van 10.
+- **Weergave:** vallende noten, notenbalk + vallend, of alleen bladmuziek.
+- **🔁 Lus:** kies "maat a – b". Na elke ronde zie je kort je score en begint de lus opnieuw.
+- **Resultaat:** juist, verkeerde toets, gemist, te vroeg en te laat (op tempo), en de moeilijkste maten. "Oefen deze maten" zet daar meteen een lus op, in de wachtmodus en op hoogstens 80 % tempo.
+
+Je keuzes worden per liedje onthouden, en de beste score staat in de bibliotheek.
+
+**Eigen MIDI-bestand:** te openen via de bibliotheek of via Vrij spelen. Het bestand wordt automatisch gesplitst in linker- en rechterhand: per spoor als er een duidelijk hoge en lage partij is, anders rond de centrale C. Het wordt niet bewaard; een lus of notenbalk is er niet mogelijk, want MIDI-bestanden hebben geen maatinformatie.
 
 ## Lessen toevoegen
 
@@ -185,5 +204,5 @@ Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instelling
 - [x] Fase 2: handen en vingerzetting, hoofdstuk 2 "Handen en houding"
 - [x] Fase 3: volledige cursus (15 hoofdstukken, 92 lessen) + notenbalk (VexFlow), metronoom, ritme- en leesoefeningen
 - [x] Fase 4: dagelijkse opwarming + metronoom, streak en weekminuten
-- [ ] Fase 5: liedjesbibliotheek + oefentools
+- [x] Fase 5: liedjesbibliotheek (25 liedjes, 3 niveaus) + oefentools (handen, tempo, lus, feedback per maat, eigen MIDI)
 - [ ] Fase 6: afwerking (voortgang, instellingen, animaties)

@@ -2,7 +2,7 @@
 // Gebruik:  node tests/smoke.mjs            (start zelf een python-webserver op poort 8123)
 // Vereist: Chrome of Edge en Python. Geen npm nodig (gebruikt het Chrome DevTools Protocol via WebSocket).
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +19,15 @@ const CHROME = [
 if (!CHROME) { console.error('Geen Chrome gevonden (zet CHROME=pad)'); process.exit(2); }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Klein MIDI-bestand (type 1): spoor 1 = melodie hoog, spoor 2 = bas.
+function tinyMidi() {
+  const vlq = n => { const b = [n & 127]; while ((n >>= 7)) b.unshift((n & 127) | 128); return b; };
+  const track = evs => { const body = []; for (const [dt, ...b] of evs) body.push(...vlq(dt), ...b); body.push(0, 0xff, 0x2f, 0); const l = body.length; return [0x4d, 0x54, 0x72, 0x6b, l >>> 24, (l >>> 16) & 255, (l >>> 8) & 255, l & 255, ...body]; };
+  const t1 = track([[0, 0x90, 72, 100], [480, 0x80, 72, 0], [0, 0x90, 76, 90], [480, 0x80, 76, 0]]);
+  const t2 = track([[0, 0x91, 48, 80], [960, 0x81, 48, 0]]);
+  return new Uint8Array([0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 2, 0x01, 0xe0, ...t1, ...t2]);
+}
 const server = spawn(process.platform === 'win32' ? 'python' : 'python3', ['-m', 'http.server', String(PORT), '--bind', '127.0.0.1'], { cwd: ROOT, stdio: 'ignore' });
 const profile = mkdtempSync(join(tmpdir(), 'pianoles-smoke-'));
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DBG}`, `--user-data-dir=${profile}`, '--no-first-run', '--window-size=844,390', 'about:blank'], { stdio: 'ignore' });
@@ -56,6 +65,7 @@ try {
   await send('Runtime.enable');
   await send('Log.enable');
   await send('Page.enable');
+  await send('DOM.enable');
   await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` });
   for (let i = 0; i < 40; i++) { await sleep(150); if (await evaluate('!!window.pianoles').catch(() => false)) break; }
   check(await evaluate('!!window.pianoles'), 'app start (modules geladen)');
@@ -220,6 +230,39 @@ try {
   await evaluate('document.getElementById("mPlus").click()');
   check(await evaluate('pianoles.store.get().settings.metroBpm') === 82, 'metronoom: tempo + bewaard');
   await go('#/', 300);
+
+  // ---------- fase 5 ----------
+  await go('#/liedjes', 400);
+  const nSongs = await evaluate('document.querySelectorAll(".song-card").length');
+  check(nSongs >= 25, `bibliotheek toont ${nSongs} liedjes`);
+  await go('#/liedjes/3', 300);
+  check(await evaluate('document.querySelectorAll(".song-card").length') < nSongs, 'filter op niveau werkt');
+  // Op tempo, 150 %, niets spelen -> alles gemist -> resultaat met moeilijkste maten -> oefen deze maten
+  await go('#/liedje/hot-cross-buns', 600);
+  await evaluate('const m=document.getElementById("sMode");m.value="play";m.dispatchEvent(new Event("change"))');
+  for (let i = 0; i < 5; i++) await evaluate('document.getElementById("tPlus").click()');
+  check((await text('#tVal')) === '150%', 'tempo tot 150 %');
+  await evaluate('document.getElementById("sPlay").click()');
+  for (let i = 0; i < 40 && !(await evaluate('document.getElementById("done").classList.contains("show")')); i++) await sleep(300);
+  check(await evaluate('document.getElementById("done").classList.contains("show")'), 'resultaatscherm na het liedje');
+  check(/gemist/.test(await text('#rGrid')) && /Moeilijkste maten/.test(await text('#rHard')), `gedetailleerde feedback (${await text('#rHard')})`);
+  await evaluate('document.getElementById("rPractice").click()');
+  await sleep(300);
+  check(await evaluate('pianoles.current.state.loop.on && pianoles.current.state.mode==="wait"'), '"Oefen deze maten" zet een lus in de wachtmodus');
+  // alleen rechterhand: de app speelt links mee
+  await evaluate('const h=document.getElementById("sHands");h.value="rh";h.dispatchEvent(new Event("change"))');
+  check(await evaluate('pianoles.current.engine.hands==="rh"'), 'alleen rechts oefenen');
+  // eigen MIDI-bestand via de bibliotheek
+  const midiPath = join(profile, 'test.mid');
+  writeFileSync(midiPath, Buffer.from(tinyMidi()));
+  await go('#/liedjes', 300);
+  const doc = await send('DOM.getDocument', {});
+  const node = await send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '#midi' });
+  await send('DOM.setFileInputFiles', { nodeId: node.nodeId, files: [midiPath] });
+  await sleep(800);
+  check((await evaluate('location.hash')) === '#/liedje/eigen' && (await text('#title')) === 'test', 'eigen MIDI-bestand opent in de speler');
+  check(await evaluate('pianoles.current.engine.notes.some(n=>n.hand==="lh") && pianoles.current.engine.notes.some(n=>n.hand==="rh")'), 'MIDI automatisch gesplitst in twee handen');
+  await go('#/', 200);
 
   // Export/import van voortgang
   const json = await evaluate('pianoles.store.exportJSON()');

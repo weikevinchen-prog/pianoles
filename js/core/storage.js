@@ -28,7 +28,8 @@ export function defaults() {
     placement: null,       // {date, certified: [hoofdstuk-ids]}
     calibration: null,     // {date, lo, hi, velocity, pedal}
     weak: { notes: {}, skills: {} },
-    workouts: {},          // 'YYYY-MM-DD' -> {done, acc, stars, items: [{kind, title, acc}]}
+    workouts: {},
+    songPrefs: {},         // liedje-id -> {version, hands, mode, view, tempo}          // 'YYYY-MM-DD' -> {done, acc, stars, items: [{kind, title, acc}]}
     migrated: false,
   };
 }
