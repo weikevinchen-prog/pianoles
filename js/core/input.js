@@ -3,6 +3,7 @@
 import { bus } from './events.js';
 import { ensureAudio, tone } from './audio.js';
 import * as store from './storage.js';
+import { isEcho } from './playback.js';
 
 export const pressed = new Set();
 export const state = { pedal: false, kbOct: 4, lastSrc: null };
@@ -24,7 +25,7 @@ export function noteOff(m, src = 'touch') {
   bus.emit('noteoff', { m, src });
 }
 
-bus.on('midi:on', (m, v) => noteOn(m, v, 'midi'));
+bus.on('midi:on', (m, v) => { if (!isEcho(m)) noteOn(m, v, 'midi'); });
 bus.on('midi:off', m => noteOff(m, 'midi'));
 bus.on('midi:pedal', p => { state.pedal = p; bus.emit('pedal', p); });
 

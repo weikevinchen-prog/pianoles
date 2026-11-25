@@ -264,6 +264,44 @@ try {
   check(await evaluate('pianoles.current.engine.notes.some(n=>n.hand==="lh") && pianoles.current.engine.notes.some(n=>n.hand==="rh")'), 'MIDI automatisch gesplitst in twee handen');
   await go('#/', 200);
 
+  // ---------- fase 6 ----------
+  await go('#/instellingen', 400);
+  await evaluate('document.querySelector(".preset[data-i=\\"1\\"]").click()');
+  check(await evaluate('pianoles.store.get().settings.rhColor') === '#3b82f6', 'handkleuren: voorinstelling blauw/oranje');
+  await evaluate('{const s=document.querySelector("select[data-key=effects]");s.value="false";s.dispatchEvent(new Event("change"))}');
+  check(await evaluate('pianoles.store.get().settings.effects===false && document.documentElement.classList.contains("no-anim")'), 'animaties uitzetten');
+  await evaluate('{const s=document.querySelector("select[data-key=effects]");s.value="true";s.dispatchEvent(new Event("change"))}');
+  // latency meten: 16 tikken, telkens ~40 ms na de tik
+  await go('#/latency', 300);
+  await evaluate('document.getElementById("go").click()');
+  await sleep(300 + 4 * 750 + 40);
+  for (let i = 0; i < 16; i++) { const t0 = Date.now(); await note(60, 0); await sleep(750 - (Date.now() - t0)); }
+  await sleep(1200);
+  const latTxt = await text('#status');
+  check(/gemiddeld/.test(latTxt), `latency gemeten (${latTxt.replace(/\s+/g, ' ').slice(0, 60)})`);
+  await evaluate('[...document.querySelectorAll("#ctl button")].find(b=>b.textContent.startsWith("Bewaar"))?.click()');
+  const lat = await evaluate('pianoles.store.get().settings.latency');
+  check(Math.abs(lat) < 300, `latency bewaard (${lat} ms)`);
+  // viering na een les met sterren (h1-l3, vanaf stap 2: centrale C, uitleg, quiz)
+  await go('#/les/h1-l3/2', 400);
+  await note(60, 900);
+  await evaluate('document.querySelector("#lCtl button").click()');
+  await sleep(200);
+  for (let i = 0; i < 6; i++) {
+    const nn = await text('#lPrompt .nn');
+    const r = /^C(\d)$/.exec(nn);
+    if (r) await note((+r[1] + 1) * 12, 750);
+  }
+  await sleep(200);
+  check(await evaluate('!!document.querySelector(".result-card .burst")'), 'sterrenburst bij een les met sterren');
+  // streakmelding wanneer vandaag de eerste volle minuut erbij komt
+  await evaluate(`pianoles.store.update(s=>{s.practice[Object.keys(s.practice).sort().pop()||'x']=0; for (const k in s.practice) if (k===new Date().toISOString().slice(0,10)) s.practice[k]=0;}); pianoles.store.update(s=>{const d=new Date();const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');s.practice[k]=10}); pianoles.store.addPractice(70)`);
+  await sleep(200);
+  check(await evaluate('document.getElementById("appToast")?.classList.contains("show")'), 'melding bij een groeiende reeks');
+  await go('#/voortgang', 400);
+  check(await evaluate('document.querySelectorAll(".heat .h").length') === 28 && await evaluate('document.querySelectorAll(".chp").length') === 15, 'voortgang: 4-wekenkaart en 15 hoofdstukken');
+  await go('#/', 200);
+
   // Export/import van voortgang
   const json = await evaluate('pianoles.store.exportJSON()');
   await evaluate('pianoles.store.resetAll()');

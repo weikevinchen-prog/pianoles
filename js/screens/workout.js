@@ -6,6 +6,7 @@ import { createRunner } from '../lesson/runner.js';
 import { starsFor } from '../player/engine.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
 import { lessonView } from './lessonview.js';
+import { celebrate } from '../ui/celebrate.js';
 
 const today = () => dayKey();
 
@@ -106,6 +107,7 @@ function run(root) {
         <div class="row center"><a class="btn main" href="#/cursus">Verder met de cursus</a><a class="btn" href="#/">Menu</a></div>
       </div>
     </div>`;
+    celebrate(root.querySelector('.stars.big'), starsFor(res.acc));
   }
   return () => { runner.abort(); view.stage.destroy(); };
 }

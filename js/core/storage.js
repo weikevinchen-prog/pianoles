@@ -1,7 +1,7 @@
 // Voortgang en instellingen in localStorage (één sleutel), met export/import als JSON.
 // Alles zit in try/catch: in privémodus of in sommige webviews kan localStorage ontbreken.
 import { bus } from './events.js';
-import { dayKey } from './stats.js';
+import { dayKey, streakDays } from './stats.js';
 
 const KEY = 'pianoles:v1';
 export const VERSION = 1;
@@ -16,7 +16,9 @@ export function defaults() {
       rhColor: '#2bb3a3',  // rechterhand: turkoois
       lhColor: '#e0644f',  // linkerhand: koraal
       latency: 0,          // ms, latency-compensatie voor de modus "op tempo"
-      effects: true,       // animaties en geluidjes bij sterren
+      effects: true,       // animaties bij sterren en reeksen (ook uit bij prefers-reduced-motion)
+      effectSound: true,   // zachte geluidjes bij sterren en reeksen
+      accompaniment: 'app', // voorspelen/begeleiding: 'app' (Web Audio) | 'piano' (MIDI out)
       view: 'auto',        // stukjes: 'auto' (zoals de les het vraagt) | 'falling' | 'both' | 'staff'
       workoutBpm: 72,      // tempo van de vinger- en toonladderoefeningen in de opwarming
       metroBpm: 80,        // metronoom
@@ -88,10 +90,13 @@ export function update(fn) {
 
 export function addPractice(sec) {
   if (!(sec > 0)) return;
+  const k = dayKey();
+  const before = get().practice[k] || 0;
   update(s => {
-    const k = dayKey();
     s.practice[k] = Math.round(((s.practice[k] || 0) + sec) * 10) / 10;
   });
+  // Vandaag voor het eerst een volle minuut gespeeld: de reeks groeit.
+  if (before < 60 && get().practice[k] >= 60) bus.emit('streak', streakDays(get().practice));
 }
 
 export function exportJSON() {

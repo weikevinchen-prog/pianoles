@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dayKey, weekSeconds, streakDays } from '../js/core/stats.js';
+import { dayKey, weekSeconds, streakDays, longestStreak, totalSeconds, heatmap, median } from '../js/core/stats.js';
 import { merge, defaults } from '../js/core/storage.js';
 
 const day = (base, off) => { const d = new Date(base); d.setDate(d.getDate() + off); return dayKey(d); };
@@ -22,4 +22,23 @@ test('storage.merge vult aan en behoudt data', () => {
   assert.deepEqual(m.lessons, { a: { stars: 2 } });
   assert.equal(m.extra, 1);
   assert.deepEqual(merge(defaults(), { settings: 'kapot' }).settings, defaults().settings);
+});
+
+
+test('langste reeks, totaal en heatmap', () => {
+  const p = { '2026-11-01': 100, '2026-11-02': 100, '2026-11-03': 100, '2026-11-05': 100, '2026-11-06': 30, '2026-10-31': 70 };
+  assert.equal(longestStreak(p), 4);
+  assert.equal(totalSeconds(p), 500);
+  const h = heatmap(p, new Date(2026, 10, 25), 4);
+  assert.equal(h.length, 4);
+  assert.equal(h[0].length, 7);
+  assert.equal(h[3].find(d => d.key === '2026-11-25').future, false);
+  assert.equal(h[3][6].key, '2026-11-29'); // zondag
+  assert.ok(h[3][6].future);
+});
+
+test('mediaan', () => {
+  assert.equal(median([5, 1, 3]), 3);
+  assert.equal(median([4, 1, 3, 2]), 2.5);
+  assert.equal(median([]), null);
 });

@@ -4,6 +4,7 @@ import { findLesson, isUnlocked, nextLesson, recordLesson } from '../lesson/cour
 import { createRunner } from '../lesson/runner.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
 import { lessonView } from './lessonview.js';
+import { celebrate } from '../ui/celebrate.js';
 
 // Route: #/les/<id> of #/les/<id>/<stapnummer> (vanaf die stap beginnen)
 export function render(root, [id, stepNo]) {
@@ -56,6 +57,7 @@ export function render(root, [id, stepNo]) {
       </div>
     </div>`;
     root.querySelector('#again').onclick = start;
+    celebrate(root.querySelector('.stars.big'), res.stars, { record: !!record });
   }
 
   start();

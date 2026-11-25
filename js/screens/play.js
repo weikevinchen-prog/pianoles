@@ -4,7 +4,8 @@ import { bus } from '../core/events.js';
 import * as store from '../core/storage.js';
 import { buildPiece } from '../core/notation.js';
 import { loadMidiFile } from '../core/midifile.js';
-import { ensureAudio, tone } from '../core/audio.js';
+import { ensureAudio } from '../core/audio.js';
+import { playNote } from '../core/playback.js';
 import { createStage } from '../player/stage.js';
 import { createEngine } from '../player/engine.js';
 import { fallingLayer } from '../player/falling.js';
@@ -64,7 +65,7 @@ export function render(root) {
       onFinish: finish,
       playTone: n => {
         const d = n.d / engine.tempo;
-        tone(n.m, 0.7, { dur: Math.max(0.5, d + 0.4) });
+        playNote(n.m, n.v || 0.7, d);
         stage.flash(n.m, C.green, d * 1000);
       },
     });

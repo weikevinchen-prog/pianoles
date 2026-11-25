@@ -4,7 +4,8 @@ import SONGS, { LEVELS, VERSIONS } from '../data/songs.js';
 import { bus } from '../core/events.js';
 import * as store from '../core/storage.js';
 import { buildPiece } from '../core/notation.js';
-import { ensureAudio, tone } from '../core/audio.js';
+import { ensureAudio } from '../core/audio.js';
+import { playNote } from '../core/playback.js';
 import { getCustom } from '../core/customsong.js';
 import { createStage } from '../player/stage.js';
 import { createEngine, LEAD } from '../player/engine.js';
@@ -14,6 +15,7 @@ import { fitRange } from '../player/keyboard.js';
 import { attachView, resolveView } from '../player/views.js';
 import { C } from '../ui/colors.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
+import { celebrate } from '../ui/celebrate.js';
 
 const MODES = { wait: 'Wachtmodus', play: 'Op tempo', demo: 'Voorspelen' };
 const HANDS = { both: 'Beide handen', rh: 'Alleen rechts', lh: 'Alleen links' };
@@ -95,7 +97,7 @@ export function render(root, [id]) {
       onChange: upd, onFinish: finish,
       playTone: n => {
         const d = n.d / engine.tempo;
-        tone(n.m, 0.7, { dur: Math.max(0.5, d + 0.4) });
+        playNote(n.m, n.v || 0.7, d);
         stage.flash(n.m, C.green, d * 1000);
       },
     });
@@ -173,6 +175,7 @@ export function render(root, [id]) {
     q('#rHard').textContent = hard.length ? `Moeilijkste maten: ${hard.map(h => `${label(h.measure)} (${h.errors} ${h.errors === 1 ? 'fout' : 'fouten'})`).join(', ')}` : (measures ? 'Geen moeilijke maten: alles liep vlot!' : '');
     q('#rPractice').hidden = isFile || !hard.length;
     q('#done').classList.add('show');
+    celebrate(q('#rStars'), res.stars, { record: prev != null && res.acc > prev });
   }
 
   /** Lus rond de moeilijkste maten, in de wachtmodus en wat trager. */

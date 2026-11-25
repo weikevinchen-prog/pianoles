@@ -5,6 +5,7 @@ import { connectMidi, midi, statusText } from './core/midi.js';
 import * as input from './core/input.js';
 import { ensureAudio } from './core/audio.js';
 import { setTitle } from './ui/dom.js';
+import { toast, chime } from './ui/celebrate.js';
 
 import * as home from './screens/home.js';
 import * as connect from './screens/connect.js';
@@ -19,6 +20,7 @@ import * as songs from './screens/songs.js';
 import * as song from './screens/song.js';
 import * as workout from './screens/workout.js';
 import * as metronome from './screens/metronome.js';
+import * as latency from './screens/latency.js';
 
 const ROUTES = {
   '': { mod: home, parent: null },
@@ -34,6 +36,7 @@ const ROUTES = {
   metronoom: { mod: metronome, parent: 'opwarming' },
   voortgang: { mod: progress, parent: '' },
   instellingen: { mod: settings, parent: '' },
+  latency: { mod: latency, parent: 'instellingen' },
 };
 
 const app = document.getElementById('app');
@@ -59,6 +62,7 @@ function route() {
 }
 
 function applyTheme() {
+  document.documentElement.classList.toggle('no-anim', store.get().settings.effects === false);
   const t = store.get().settings.theme;
   if (t === 'auto') delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = t;
@@ -74,6 +78,7 @@ store.load();
 applyTheme();
 bus.on('storage', applyTheme);
 bus.on('midi:status', updatePill);
+bus.on('streak', n => { toast(`🔥 ${n} ${n === 1 ? 'dag' : 'dagen'} op rij! Goed bezig.`); chime('streak'); });
 updatePill();
 input.attachKeyboard();
 // iOS laat audio pas toe na een aanraking: bij elke aanraking/toets de audio wekken.

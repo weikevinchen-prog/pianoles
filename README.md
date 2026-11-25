@@ -194,6 +194,27 @@ De tikken worden vooruit ingepland op de audioklok, zodat de timing nauwkeurig b
 
 **Streak:** een dag telt mee vanaf 1 minuut spelen. "Minuten deze week" telt de tijd tussen gespeelde noten, met pauzes van hoogstens 20 seconden.
 
+## Instellingen en afwerking
+
+- **Notennamen:** C D E, do re mi of geen.
+- **App-geluid bij jouw noten:** automatisch (stil zodra de piano via MIDI speelt), altijd aan of uit.
+- **Voorspelen en begeleiding:** uit het toestel (Web Audio) of **via de piano** (MIDI out). Via de piano klinkt het mooier en zonder vertraging. Een eventuele echo van de piano wordt genegeerd (noten die binnen 40 ms terugkomen).
+- **Weergave bij stukjes:** zoals de les het vraagt, of altijd vallend, samen of bladmuziek.
+- **Handkleuren:** vrij te kiezen, of een voorinstelling. Blauw/oranje is beter te onderscheiden bij kleurenblindheid.
+- **Latency-compensatie:** met **Meten** (#/latency) tik je 16 keer mee op de metronoom. De mediaan van je afwijking (Bluetooth MIDI + audio + jezelf) wordt bewaard en gebruikt in de modus "op tempo". Je kunt de waarde ook met de schuifregelaar instellen.
+- **Beloningen:**
+  - Een kleine sterrenburst bij sterren, een zacht belletje, en een melding als je reeks groeit.
+  - Animaties en geluidjes zet je apart uit.
+  - Animaties staan ook uit als je toestel "minder beweging" vraagt (prefers-reduced-motion).
+- **Thema:** licht of donker.
+- **Back-up:** export of import als JSON.
+
+**Voortgangsscherm:**
+- cursus in %, sterren, huidige en langste reeks, oefentijd per week en in totaal;
+- een kaart van de laatste 4 weken;
+- per hoofdstuk een balk met een vakje per les (sterren of "overgeslagen");
+- de beste score per liedje.
+
 ## Voortgang
 
 Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instellingen** kun je een back-up exporteren of importeren (JSON-bestand).
@@ -205,4 +226,4 @@ Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instelling
 - [x] Fase 3: volledige cursus (15 hoofdstukken, 92 lessen) + notenbalk (VexFlow), metronoom, ritme- en leesoefeningen
 - [x] Fase 4: dagelijkse opwarming + metronoom, streak en weekminuten
 - [x] Fase 5: liedjesbibliotheek (25 liedjes, 3 niveaus) + oefentools (handen, tempo, lus, feedback per maat, eigen MIDI)
-- [ ] Fase 6: afwerking (voortgang, instellingen, animaties)
+- [x] Fase 6: afwerking (voortgangsscherm, handkleuren, latency-kalibratie, begeleiding via de piano, rustige beloningen)

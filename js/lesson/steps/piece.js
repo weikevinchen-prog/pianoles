@@ -3,7 +3,8 @@
 // Score = beste poging van de laatste beoordeelde fase (tempo, anders wacht).
 // Extra velden: view ('falling' | 'both' | 'staff'), metronome, anyKey (ritme: elke toets telt), key, pickup, transpose.
 import { buildPiece, parseRange } from '../../core/notation.js';
-import { tone, ensureAudio } from '../../core/audio.js';
+import { ensureAudio } from '../../core/audio.js';
+import { playNote } from '../../core/playback.js';
 import { createEngine } from '../../player/engine.js';
 import { fallingLayer } from '../../player/falling.js';
 import { handLayer, engineHands } from '../../player/handlayer.js';
@@ -72,7 +73,7 @@ export default function piece(step, ctx) {
         anyKey: !!step.anyKey,
         playTone: n => {
           const d = n.d / engine.tempo;
-          tone(n.m, 0.7, { dur: Math.max(0.5, d + 0.4) });
+          playNote(n.m, n.v || 0.7, d);
           ctx.stage.flash(n.m, C.green, d * 1000);
         },
         onFinish: res => { if (id === runId) done(i, res, id); },
