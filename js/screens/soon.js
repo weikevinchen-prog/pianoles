@@ -2,7 +2,6 @@
 import { setTitle } from '../ui/dom.js';
 
 const INFO = {
-  opwarming: { title: 'Dagelijkse opwarming', text: 'Een dagelijkse routine van 5 à 10 minuten op maat: vingeroefeningen, toonladders, herhaling en een notenlees-quiz, met metronoom. Komt in fase 4.' },
   liedjes: { title: 'Liedjes', text: 'Een bibliotheek van 25+ publiek-domeinliedjes in drie niveaus, met oefentools per hand, tempo, lus en gedetailleerde feedback. Komt in fase 5. Voorlopig kun je de bestaande liedjes en je eigen MIDI-bestanden spelen via Vrij spelen.' },
 };
 

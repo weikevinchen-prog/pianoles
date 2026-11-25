@@ -52,9 +52,11 @@ js/player/              engine (wacht/tempo/voorspelen + scoring), stage (canvas
                         handpos (vingerposities), handlayer (kleine hand op/boven het klavier)
 js/ui/                  colors, dom, hands (SVG-handen), illustrations (houdingskaartjes)
 js/lesson/              course (vergrendeling, sterren), runner (stappen afspelen), steps/ (staptypes)
+js/workout/generator.js stelt de dagelijkse opwarming samen
 js/screens/             één module per scherm
 js/data/                course.js (voegt de hoofdstukken samen), chapters/h01.js … h15.js (lessen per hoofdstuk),
-                        songs.js (liedjes), placement.js (instaptest)
+                        songs.js (liedjes), placement.js (instaptest), exercises.js (vingeroefeningen,
+                        toonladders, arpeggio's)
 tests/                  node-tests + rooktest
 ```
 
@@ -151,6 +153,28 @@ Na een oefenfase met minstens 2 sterren gaat de app vanzelf door naar de volgend
 
 **Instaptest:** `js/data/placement.js` bevat per hoofdstuk een paar proefstappen. Haal je ≥ 85%, dan wordt dat hoofdstuk als "overgeslagen" vrijgegeven en gaat de test verder.
 
+## Dagelijkse opwarming
+
+`js/workout/generator.js` stelt elke dag een opwarming van ± 5–10 minuten samen. Op dezelfde dag krijg je dezelfde mix (de datum is de seed). De opwarming bevat:
+
+1. **Een vingeroefening** (`FINGER` in `js/data/exercises.js`): rechts, links of met twee handen, soms in de G-positie.
+2. **Een toonladder of arpeggio** die je al geleerd hebt (`SCALES`, `ARPEGGIOS`). Beginners krijgen de vijf-noten-ladder.
+3. **Een herhaling** van de laatste oefening uit je zwakste les: weinig sterren, of lang niet meer gespeeld.
+4. **Noten lezen** op de notenbalk. Noten die je in leesquizzen vaak mis had (`weak.notes`), komen vaker terug. Vóór hoofdstuk 7 is dit "noten vinden op het klavier".
+5. **Om de dag een ritmeoefening**: een willekeurig ritme met de ritmes die je al kent.
+
+Een oefening verschijnt pas als je de les uit haar `requires` gehaald hebt. Toonladders en arpeggio's staan in `exercises.js` en worden gedeeld met hoofdstuk 11 en 14. Het tempo van de vinger- en toonladderoefeningen stel je in op het opwarmingsscherm.
+
+**Metronoom** (`#/metronoom`):
+- tempo 30–220;
+- maat 2/4, 3/4, 4/4 of 6/8;
+- tap-tempo;
+- spatie = start/stop.
+
+De tikken worden vooruit ingepland op de audioklok, zodat de timing nauwkeurig blijft.
+
+**Streak:** een dag telt mee vanaf 1 minuut spelen. "Minuten deze week" telt de tijd tussen gespeelde noten, met pauzes van hoogstens 20 seconden.
+
 ## Voortgang
 
 Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instellingen** kun je een back-up exporteren of importeren (JSON-bestand).
@@ -160,6 +184,6 @@ Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instelling
 - [x] Fase 1: structuur, verbinden, kalibratie, hoofdstuk 1 "Het klavier terugvinden", instaptest-skelet
 - [x] Fase 2: handen en vingerzetting, hoofdstuk 2 "Handen en houding"
 - [x] Fase 3: volledige cursus (15 hoofdstukken, 92 lessen) + notenbalk (VexFlow), metronoom, ritme- en leesoefeningen
-- [ ] Fase 4: dagelijkse opwarming + metronoom
+- [x] Fase 4: dagelijkse opwarming + metronoom, streak en weekminuten
 - [ ] Fase 5: liedjesbibliotheek + oefentools
 - [ ] Fase 6: afwerking (voortgang, instellingen, animaties)

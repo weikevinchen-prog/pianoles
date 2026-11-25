@@ -207,3 +207,31 @@ ol{padding-left:22px;margin:0}ol li{margin-bottom:4px}
 .ch-t{display:flex;flex-direction:column;line-height:1.25}.ch-t b{font-size:17px}
 .ch-body{padding:0 16px 14px}
 .ch-intro{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ch-intro p{margin:0}
+
+/* ---------- fase 4: opwarming en metronoom ---------- */
+.wo-head{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px}
+.wo-head .stat.wide{padding:6px 10px}
+.small-bars{height:82px;padding-top:6px}
+.barcol.today .b{background:var(--gold)}
+.wo-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.wo-list{list-style:none;padding:0;margin:4px 0 8px;display:flex;flex-direction:column;gap:6px}
+.wo-list li{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 10px;border-radius:12px;background:var(--bg);margin:0}
+.wo-list .ic{font-size:22px;flex:none}.wo-list .t{flex:1;font-weight:700}
+.tag.ok{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.bpm-small{min-width:44px;text-align:center;font-size:20px;font-variant-numeric:tabular-nums}
+.wo-result{list-style:none;padding:0;margin:8px 0;text-align:left}
+.wo-result li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);margin:0}
+.metro-card{max-width:560px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px;align-items:stretch;text-align:center}
+.metro .beats{display:flex;justify-content:center;gap:14px;min-height:28px}
+.metro .beats span{width:22px;height:22px;border-radius:50%;background:var(--line);transition:background .06s}
+.metro .beats span.on{background:var(--teal)}
+.metro .beats.accent span.on{background:var(--gold)}
+.bpm-row{display:flex;align-items:center;justify-content:center;gap:18px}
+.bpm-row button{width:64px;height:64px;border-radius:50%;font-size:30px}
+.bpm b{display:block;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}.bpm small{color:var(--muted)}
+#mRange{width:100%}
+.field-inline{display:flex;align-items:center;gap:8px}
+.center{text-align:center}
+@media (max-height:500px){.bpm b{font-size:44px}.bpm-row button{width:52px;height:52px}.metro-card{gap:8px;padding:10px}}
+@media (max-width:700px){.wo-head{grid-template-columns:1fr 1fr}.wo-head .stat.wide{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.metro .beats span{transition:none}}

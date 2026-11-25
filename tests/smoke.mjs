@@ -204,6 +204,23 @@ try {
   check(await evaluate('document.querySelectorAll("details.chapter").length') === 15, 'cursus toont 15 hoofdstukken');
   await go('#/', 200);
 
+  // ---------- fase 4 ----------
+  await go('#/opwarming', 500);
+  const woItems = await evaluate('document.querySelectorAll(".wo-list li").length');
+  check(woItems >= 4, `opwarming stelt ${woItems} oefeningen samen`);
+  await evaluate('document.getElementById("wPlus").click()');
+  await sleep(200);
+  check(await evaluate('pianoles.store.get().settings.workoutBpm') === 76, 'tempo van de opwarming instelbaar');
+  await go('#/opwarming/start', 1500);
+  check((await text('#lPrompt')).length > 10 && (await text('#title')).length > 3, 'opwarming start met de eerste oefening');
+  await go('#/metronoom', 400);
+  await evaluate('document.getElementById("mGo").click()');
+  await sleep(1300);
+  check(await evaluate('!!document.querySelector("#mBeats span.on")'), 'metronoom tikt (visuele tel)');
+  await evaluate('document.getElementById("mPlus").click()');
+  check(await evaluate('pianoles.store.get().settings.metroBpm') === 82, 'metronoom: tempo + bewaard');
+  await go('#/', 300);
+
   // Export/import van voortgang
   const json = await evaluate('pianoles.store.exportJSON()');
   await evaluate('pianoles.store.resetAll()');

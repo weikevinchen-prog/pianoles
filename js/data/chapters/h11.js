@@ -1,6 +1,8 @@
 // Hoofdstuk 11: buiten de 5-vingerpositie: duim onderdoor, vinger over, toonladder C.
-const SCALE_RH = 'C4/1 D4/2 E4/3 F4/1 | G4/2 A4/3 B4/4 C5/5 | C5/5 B4/4 A4/3 G4/2 | F4/1 E4/3 D4/2 C4/1';
-const SCALE_LH = 'C3/5 D3/4 E3/3 F3/2 | G3/1 A3/3 B3/2 C4/1 | C4/1 B3/2 A3/3 G3/1 | F3/2 E3/3 D3/4 C3/5';
+import { SCALES } from '../exercises.js';
+
+const SCALE_RH = SCALES.C.rh;
+const SCALE_LH = SCALES.C.lh;
 
 export default {
   id: 'h11',

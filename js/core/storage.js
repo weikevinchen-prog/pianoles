@@ -18,6 +18,9 @@ export function defaults() {
       latency: 0,          // ms, latency-compensatie voor de modus "op tempo"
       effects: true,       // animaties en geluidjes bij sterren
       view: 'auto',        // stukjes: 'auto' (zoals de les het vraagt) | 'falling' | 'both' | 'staff'
+      workoutBpm: 72,      // tempo van de vinger- en toonladderoefeningen in de opwarming
+      metroBpm: 80,        // metronoom
+      metroBeats: 4,
     },
     lessons: {},           // id -> {stars, best, status: 'done'|'skipped'|'tried', date, tries}
     songs: {},             // 'songId/versie/modus' -> {best, stars, date}
@@ -25,6 +28,7 @@ export function defaults() {
     placement: null,       // {date, certified: [hoofdstuk-ids]}
     calibration: null,     // {date, lo, hi, velocity, pedal}
     weak: { notes: {}, skills: {} },
+    workouts: {},          // 'YYYY-MM-DD' -> {done, acc, stars, items: [{kind, title, acc}]}
     migrated: false,
   };
 }

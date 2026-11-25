@@ -1,7 +1,7 @@
 // Een stukje spelen, in fases: voorspelen -> wachtmodus -> op tempo.
 // Vingernummers staan in de blokjes; de vingertoppen op de toetsen tonen welke vinger nu moet.
 // Score = beste poging van de laatste beoordeelde fase (tempo, anders wacht).
-// Extra velden: view ('falling' | 'both' | 'staff'), metronome, anyKey (ritme: elke toets telt), key, pickup.
+// Extra velden: view ('falling' | 'both' | 'staff'), metronome, anyKey (ritme: elke toets telt), key, pickup, transpose.
 import { buildPiece, parseRange } from '../../core/notation.js';
 import { tone, ensureAudio } from '../../core/audio.js';
 import { createEngine } from '../../player/engine.js';
@@ -21,6 +21,9 @@ const PHASE = {
 export default function piece(step, ctx) {
   const meter = step.meter || [4, 4], bpm = step.bpm || 80, pickup = step.pickup || 0;
   const { notes } = buildPiece({ rh: step.rh, lh: step.lh }, { bpm, meter, pickup });
+  // transpose: alles een aantal halve tonen verschuiven (de handpositie volgt dan uit de noten)
+  if (step.transpose) notes.forEach(n => (n.m += step.transpose));
+  const position = step.transpose ? null : step.position;
   const [lo, hi] = step.range ? parseRange(step.range) : fitRange(notes);
   ctx.stage.setOptions({ lo, hi, keyRatio: 0.34, keyAspect: 5.5, keyNames: step.names || 'c' });
   const grand = notes.some(n => n.hand === 'lh') && notes.some(n => n.hand === 'rh');
@@ -76,7 +79,7 @@ export default function piece(step, ctx) {
       });
       view.setEngine(engine);
       metro?.reset();
-      ctx.stage.setLayers([fallingLayer(engine), handLayer(engineHands(engine, step.position), { onKeys: true })]);
+      ctx.stage.setLayers([fallingLayer(engine), handLayer(engineHands(engine, position), { onKeys: true })]);
       if (phase === 'demo') button('Overslaan →', () => next(i));
       if (phase === 'wait' && phases.includes('tempo')) button('Meteen op tempo →', () => go(phases.indexOf('tempo')));
       ensureAudio();

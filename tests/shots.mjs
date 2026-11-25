@@ -48,7 +48,7 @@ try {
       await sleep(250);
     }
     const shot = await send('Page.captureScreenshot', { format: 'png' });
-    const file = join(out, spec.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') + '.png');
+    const file = join(out, spec.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '').slice(0, 60) + '.png');
     writeFileSync(file, Buffer.from(shot.data, 'base64'));
     console.log(file);
   }
