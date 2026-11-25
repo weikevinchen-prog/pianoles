@@ -1,0 +1,171 @@
+/* VOICE: speels maar rustig, als een oefenkamer 's avonds
+   IDEA: de klep van een piano: zwart gelakt podium, ivoren toetsen
+   COLOUR and TYPE: lak #15131a, ivoor #f6f1e6, rechterhand turkoois, linkerhand koraal, goud voor 'nu'; Manrope
+   LAYOUT: compacte balk bovenaan, podium met groot klavier vult de rest (iPhone liggend) */
+:root{
+  color-scheme:light dark;
+  --bg:light-dark(#efe9dc,#0e0d12);--ink:light-dark(#1b1820,#efe9dc);--muted:light-dark(#6a6370,#a39cab);
+  --card:light-dark(#fffdf8,#1b1922);--line:light-dark(#d9d1c1,#2c2933);
+  --acc:#e0644f;--teal:#2bb3a3;--coral:#e0644f;--gold:#f2b84b;--ok:#2fae74;--bad:#e5484d;--stage:#15131a;
+  --top:48px;--r:14px;
+}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif;
+  display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;
+  padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);-webkit-tap-highlight-color:transparent}
+h2,h3{line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+h2{font-size:24px;font-weight:800}h3{font-size:18px;font-weight:800}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}.small{font-size:14px}
+kbd{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:0 6px;font:inherit;font-size:13px}
+
+/* ---------- bovenbalk ---------- */
+.top{flex:none;display:flex;align-items:center;gap:8px;height:var(--top);padding:0 8px;border-bottom:1px solid var(--line);background:var(--card)}
+.top h1{flex:1;font-size:18px;margin:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center;border-radius:12px;color:inherit;text-decoration:none;font-size:30px;line-height:1}
+.iconbtn[hidden]{display:none}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:4px 12px;border-radius:99px;background:var(--bg);border:1px solid var(--line);font-size:13px;color:inherit;text-decoration:none;max-width:50vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{flex:none;width:10px;height:10px;border-radius:50%;background:#999}
+.pill.on .dot{background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 25%,transparent)}
+#app{flex:1;overflow:auto;display:flex;flex-direction:column;min-height:0;outline:none;padding-bottom:env(safe-area-inset-bottom)}
+
+/* ---------- knoppen en velden ---------- */
+select,button,.btn{font:inherit;font-size:16px;min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button.main,.btn.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+button.small,.btn.small{font-size:14px;min-height:44px;padding:6px 12px}
+button.ghost{background:transparent}
+button.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,var(--line))}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible,.btn:focus-visible,a:focus-visible,.file:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.file{position:relative}.file input{position:absolute;opacity:0;width:1px;height:1px}
+label.rng{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);white-space:nowrap}
+input[type=range]{width:110px;accent-color:var(--acc)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.row.center{justify-content:center}
+.field{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.field:first-of-type{border-top:0}
+
+/* ---------- pagina's ---------- */
+.page{width:100%;max-width:980px;margin:0 auto;padding:14px max(3vw,12px) 28px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:var(--r);padding:12px 14px;color:inherit;text-decoration:none}
+.banner.warn{border-left-color:var(--coral)}
+.continue{display:grid;grid-template-columns:1fr auto;align-items:center;background:var(--stage);color:#f6f1e6;border-radius:var(--r);padding:12px 18px;text-decoration:none}
+.continue small{color:#bdb5c4;grid-column:1}.continue b{font-size:20px;grid-column:1}.continue span{grid-row:1/3;grid-column:2;font-size:26px;color:var(--gold)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+@media(min-width:560px){.tiles{grid-template-columns:repeat(3,1fr)}}
+.tile{display:flex;flex-direction:column;gap:2px;min-height:96px;padding:14px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);color:inherit;text-decoration:none;transition:transform .15s}
+.tile:hover{transform:translateY(-2px)}
+.tile .ic{font-size:26px;line-height:1.1}.tile b{font-size:17px}.tile small{color:var(--muted);font-size:13px}
+
+/* verbinden */
+.status-card{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.status-card>div{flex:1}
+.bigdot{flex:none;width:22px;height:22px;border-radius:50%;background:#999}
+.bigdot.connected{background:var(--teal);box-shadow:0 0 0 6px color-mix(in srgb,var(--teal) 25%,transparent)}
+.bigdot.none,.bigdot.blocked,.bigdot.unsupported{background:var(--coral)}
+.tester{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:12px;align-items:center}
+.tester b{font-size:22px;display:block}
+.velbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:6px}.velbar span{display:block;height:100%;width:0;background:var(--gold);transition:width .1s}
+.velbar.wide{max-width:320px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ol{padding-left:22px;margin:0}ol li{margin-bottom:4px}
+
+/* cursus */
+.course-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.course-head>div{flex:1;min-width:200px}
+.meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:6px}.meter span{display:block;height:100%;background:var(--gold)}
+.chapter header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}
+.chapter header p{margin:0}
+.lessons{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.lessons li{margin:0}
+.lesson-card{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:inherit;text-decoration:none}
+.lesson-card .num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);font-weight:800;font-size:14px}
+.lesson-card .t{flex:1;font-weight:700}
+.lesson-card.passed .num{background:var(--teal);border-color:var(--teal);color:#fff}
+.lesson-card.locked{opacity:.5}
+.lesson-card.exam{border-style:dashed}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
+.stars{color:var(--gold);letter-spacing:2px;white-space:nowrap}
+.stars.small{font-size:15px}.stars.big{font-size:46px;letter-spacing:6px;line-height:1}
+.upcoming ol{color:var(--muted);columns:2;font-size:14px}
+
+/* resultaat */
+.result{justify-content:center;flex:1}
+.result-card{text-align:center;max-width:560px;margin:0 auto;padding:24px}
+@media(prefers-reduced-motion:no-preference){.stars.pop{animation:pop .5s ease-out}@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}}
+
+/* voortgang */
+.statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat small{display:block;color:var(--muted);font-size:13px}.stat b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.bars{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:16px}
+.barcol{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.barcol .b{width:100%;max-width:40px;background:var(--teal);border-radius:6px 6px 0 0;min-height:2px}
+.barcol .v{font-size:12px;color:var(--muted)}.barcol small{font-size:12px;color:var(--muted)}
+
+/* ---------- schermen met podium ---------- */
+.screen.fill{flex:1;display:flex;flex-direction:column;min-height:0}
+.bar{flex:none;display:flex;gap:6px;padding:6px 8px;align-items:center;overflow-x:auto;scrollbar-width:none}
+.bar::-webkit-scrollbar{display:none}
+.bar>*{flex:none}
+.mini-stats{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding:0 6px;white-space:nowrap}
+.stage-wrap{flex:1;min-height:160px;display:flex;padding:0 6px 6px}
+.stage{position:relative;flex:1;border-radius:var(--r);overflow:hidden;background:var(--stage);box-shadow:0 18px 40px -20px #0008}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.stage-overlay{position:absolute;inset:0;pointer-events:none}
+.stage-overlay>*{pointer-events:auto}
+.msg{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);text-align:center;color:#f6f1e6;pointer-events:none!important;width:min(90%,460px)}
+.msg b{display:block;font-size:clamp(22px,4.5vw,36px);line-height:1.1;margin-bottom:6px}
+.msg span{color:#bdb5c4;font-size:15px}
+.done{position:absolute;inset:0;display:none;place-items:center;background:#15131add}
+.done.show{display:grid}
+.done>div{background:#f6f1e6;color:#1b1820;border-radius:18px;padding:20px 26px;text-align:center;max-width:90%}
+.done h2{margin:8px 0 4px}
+
+/* les */
+.lesson-top{flex:none;display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:8px 12px 6px;align-items:start}
+.prompt{font-size:19px;line-height:1.3;font-weight:600}
+.prompt b{font-weight:800}.prompt .nn,.feedback .nn{color:var(--acc)}
+.counter{font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.feedback{grid-column:1/-1;min-height:1.5em;font-size:15px;font-weight:700}
+.feedback.ok{color:var(--ok)}.feedback.bad{color:var(--bad)}.feedback.info{color:var(--muted)}
+.feedback.summary{font-weight:600;line-height:1.6}
+.controls{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.controls:empty{display:none}
+.dots{grid-column:1/-1;display:flex;gap:6px;align-items:center}
+.dots span{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots span.done{background:var(--teal)}.dots span.cur{background:var(--gold);width:22px;border-radius:4px}
+.answers{display:flex;flex-wrap:wrap;gap:6px}
+.answers button{min-width:52px;font-weight:800;font-size:18px}
+.answers button.yes{background:var(--ok);border-color:var(--ok);color:#fff}
+.answers button.no{background:color-mix(in srgb,var(--bad) 15%,var(--card));border-color:var(--bad)}
+
+/* ---------- liggend toestel met weinig hoogte (iPhone) ---------- */
+@media (max-height:500px){
+  :root{--top:44px}
+  .top h1{font-size:16px}
+  .page{padding-top:10px}
+  .lesson-top{padding:4px 10px 4px;grid-template-columns:1fr auto auto;align-items:center}
+  .lesson-top .prompt{grid-column:1;grid-row:1}
+  .lesson-top .counter{grid-column:2;grid-row:1}
+  .lesson-top .controls{grid-column:3;grid-row:1/3;justify-content:flex-end}
+  .lesson-top .feedback{grid-column:1/3;grid-row:2}
+  .prompt{font-size:16px}
+  .feedback{font-size:14px;min-height:1.3em}
+  .dots{display:none}
+  .tiles{grid-template-columns:repeat(3,1fr)}
+  .tile{min-height:76px;padding:10px 12px}
+  .stage-wrap{min-height:140px}
+}
+@media (max-width:700px){
+  .two,.tester{grid-template-columns:1fr}
+  .statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .upcoming ol{columns:1}
+}
+
+/* draai-hint: alleen op een smal staand scherm, en alleen bij schermen met een klavier */
+.rotate-hint{display:none}
+@media (orientation:portrait) and (max-width:600px){
+  body:has(.screen.fill) .rotate-hint{display:block;flex:none;text-align:center;font-size:13px;padding:6px;background:var(--gold);color:#1b1820;font-weight:700}
+}
+@media(prefers-reduced-motion:reduce){.pill.on .dot,.bigdot.connected{box-shadow:none}.tile{transition:none}}
