@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pianoles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: speels maar rustig, als een oefenkamer 's avonds
+   IDEA: de klep van een piano: zwart gelakt podium, ivoren toetsen
+   PICTURE: vallende noten boven een echt klavier, groot, meteen speelbaar
+   COLOUR and TYPE: lak #15131a, ivoor #f6f1e6, noten turkoois/koraal, goud voor 'nu'; Manrope
+   LAYOUT: smalle bedieningsbalk, podium vult de rest, score eronder */
+:root{color-scheme:light dark;--bg:light-dark(#efe9dc,#0e0d12);--ink:light-dark(#1b1820,#efe9dc);--muted:light-dark(#6a6370,#a39cab);--card:light-dark(#fffdf8,#1b1922);--line:light-dark(#d9d1c1,#2c2933);--acc:#e0644f;--teal:#2bb3a3;--gold:#f2b84b}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif;overflow-x:clip}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:14px max(3vw,14px) 8px}
+h1{font-size:28px;line-height:1.05;margin:0;font-weight:800;letter-spacing:-.02em}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;background:#999}.pill.on .dot{background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 25%,transparent)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;padding:6px max(3vw,14px) 10px;align-items:center}
+select,button,.file{font:inherit;font-size:16px;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700;min-width:110px}
+button:focus-visible,select:focus-visible,.file:focus-within{outline:3px solid var(--gold);outline-offset:2px}
+.file input{position:absolute;opacity:0;width:1px;height:1px}
+label.rng{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+input[type=range]{width:120px;accent-color:var(--acc)}
+.stage{position:relative;margin:0 max(3vw,14px);height:min(68vh,640px);min-height:340px;border-radius:18px;overflow:hidden;background:#15131a;box-shadow:0 18px 40px -20px #0008}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.prog{position:absolute;left:0;top:0;height:4px;background:var(--gold);width:0}
+.msg{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);text-align:center;color:#f6f1e6;pointer-events:none;width:min(90%,460px)}
+.msg b{display:block;font-size:clamp(26px,5vw,40px);line-height:1.1;margin-bottom:6px}
+.msg span{color:#bdb5c4;font-size:15px}
+.done{position:absolute;inset:0;display:none;place-items:center;background:#15131add}
+.done.show{display:grid}
+.done div{background:#f6f1e6;color:#1b1820;border-radius:18px;padding:26px 30px;text-align:center;max-width:90%}
+.stars{font-size:44px;color:var(--gold);letter-spacing:6px;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px max(3vw,14px)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.stat small{display:block;color:var(--muted);font-size:13px}.stat b{font-size:24px;font-variant-numeric:tabular-nums}
+.help{padding:0 max(3vw,14px) 28px;color:var(--muted);font-size:14px;max-width:900px}
+.help kbd{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:inherit;font-size:13px}
+@media(max-width:600px){h1{font-size:22px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stage{height:60vh}}
+@media(prefers-reduced-motion:reduce){.pill.on .dot{box-shadow:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pianoles</h1>
+  <span class="pill" id="midiPill"><span class="dot"></span><span id="midiTxt">Zoeken naar piano…</span></span>
+  <button id="btnMidi">Verbind piano</button>
+</header>
+<div class="bar">
+  <select id="song" aria-label="Liedje"></select>
+  <select id="mode" aria-label="Modus">
+    <option value="wait">Wachtmodus</option>
+    <option value="play">Meespelen</option>
+    <option value="demo">Luisteren (demo)</option>
+  </select>
+  <button class="main" id="btnPlay">▶ Start</button>
+  <button id="btnRestart">↺ Opnieuw</button>
+  <label class="rng">Tempo <input type="range" id="tempo" min="40" max="150" step="5" value="100"><span id="tempoTxt">100%</span></label>
+  <select id="names" aria-label="Notennamen">
+    <option value="abc">C D E</option>
+    <option value="do">do re mi</option>
+    <option value="off">Geen namen</option>
+  </select>
+  <select id="sound" aria-label="Geluid">
+    <option value="auto">Geluid: automatisch</option>
+    <option value="on">Geluid: aan</option>
+    <option value="off">Geluid: uit</option>
+  </select>
+  <label class="file">📂 MIDI-bestand<input type="file" id="file" accept=".mid,.midi,audio/midi"></label>
+</div>
+<div class="stage" id="stage">
+  <canvas id="cv"></canvas>
+  <div class="prog" id="prog"></div>
+  <div class="msg" id="msg"><b>Klaar om te spelen?</b><span>Kies een liedje en druk op Start. In de wachtmodus wacht het liedje tot je de juiste toets speelt.</span></div>
+  <div class="done" id="done"><div><div class="stars" id="stars">★★★</div><h2 id="doneTitle" style="margin:10px 0 4px">Goed gedaan!</h2><p id="doneTxt" style="margin:0 0 16px"></p><button class="main" id="btnAgain">Nog eens</button></div></div>
+</div>
+<div class="stats">
+  <div class="stat"><small>Juist</small><b id="sHit">0</b></div>
+  <div class="stat"><small>Fout</small><b id="sWrong">0</b></div>
+  <div class="stat"><small>Reeks</small><b id="sStreak">0</b></div>
+  <div class="stat"><small>Nauwkeurigheid</small><b id="sAcc">–</b></div>
+</div>
+<p class="help">Spelen met je <b>Roland FP-10</b> via USB-kabel of Bluetooth MIDI (Chrome op Android of laptop). Zonder piano gaat het ook: tik op de toetsen of gebruik je toetsenbord: <kbd>A</kbd><kbd>W</kbd><kbd>S</kbd><kbd>E</kbd><kbd>D</kbd><kbd>F</kbd><kbd>T</kbd><kbd>G</kbd><kbd>Y</kbd><kbd>H</kbd><kbd>U</kbd><kbd>J</kbd><kbd>K</kbd> = C tot C (positie zoals op QWERTY), <kbd>Z</kbd>/<kbd>X</kbd> = octaaf lager/hoger, <kbd>Spatie</kbd> = start/pauze.</p>
+
+<script>
+{
+// ---------- liedjes (publiek domein) ----------
+const SONGS=[
+ {n:'Toonladder C',bpm:80,s:'C4 D4 E4 F4 G4 A4 B4 C5:2 B4 A4 G4 F4 E4 D4 C4:2'},
+ {n:'Altijd is Kortjakje ziek',bpm:90,s:'C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2 G4 G4 F4 F4 E4 E4 D4:2 G4 G4 F4 F4 E4 E4 D4:2 C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2'},
+ {n:'Vader Jacob',bpm:100,s:'C4 D4 E4 C4 C4 D4 E4 C4 E4 F4 G4:2 E4 F4 G4:2 G4:.5 A4:.5 G4:.5 F4:.5 E4 C4 G4:.5 A4:.5 G4:.5 F4:.5 E4 C4 C4 G3 C4:2 C4 G3 C4:2'},
+ {n:'Mary had a little lamb',bpm:100,s:'E4 D4 C4 D4 E4 E4 E4:2 D4 D4 D4:2 E4 G4 G4:2 E4 D4 C4 D4 E4 E4 E4 E4 D4 D4 E4 D4 C4:4'},
+ {n:'Ode an die Freude',bpm:100,s:'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4:1.5 D4:.5 D4:2 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4:1.5 C4:.5 C4:2'},
+ {n:'Für Elise (begin)',bpm:150,s:'E5 D#5 E5 D#5 E5 B4 D5 C5 A4:2 R C4 E4 A4 B4:2 R E4 G#4 B4 C5:2 R E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4:2 R C4 E4 A4 B4:2 R E4 C5 B4 A4:3'}
+];
+const PC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const nm=s=>{const r=/^([A-G])(#|b)?(-?\d)$/.exec(s);return (+r[3]+1)*12+PC[r[1]]+(r[2]==='#'?1:r[2]==='b'?-1:0)};
+const mel=(str,bpm)=>{let t=0;const out=[],k=60/bpm;for(const tok of str.trim().split(/\s+/)){const [n,b='1']=tok.split(':');const be=parseFloat(b);if(n!=='R')out.push({m:nm(n),t:t*k,d:be*k*.92});t+=be}return out};
+
+// ---------- MIDI-bestand inlezen ----------
+function parseMidi(buf){
+ const d=new DataView(buf);let p=0;
+ const str=n=>{let s='';for(let i=0;i<n;i++)s+=String.fromCharCode(d.getUint8(p+i));p+=n;return s};
+ if(str(4)!=='MThd')throw new Error('Geen geldig MIDI-bestand');
+ const hl=d.getUint32(p);p+=4;const ntr=d.getUint16(p+2),div=d.getUint16(p+4);p+=hl;
+ if(div&0x8000)throw new Error('SMPTE-timing wordt niet ondersteund');
+ const tempos=[{tick:0,us:500000}],raw=[];
+ for(let tr=0;tr<ntr&&p+8<=d.byteLength;tr++){
+  const id=str(4),len=d.getUint32(p);p+=4;const end=p+len;
+  if(id!=='MTrk'){p=end;continue}
+  let tick=0,run=0;const on={};
+  const vlq=()=>{let v=0,b;do{b=d.getUint8(p++);v=(v<<7)|(b&127)}while(b&128);return v};
+  while(p<end){
+   tick+=vlq();let st=d.getUint8(p);
+   if(st&128){p++;if(st<0xf0)run=st}else st=run;
+   if(st===0xff){const ty=d.getUint8(p++),l=vlq();if(ty===0x51)tempos.push({tick,us:(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2)});p+=l}
+   else if(st===0xf0||st===0xf7){p+=vlq()}
+   else{const hi=st&0xf0,ch=st&15,a=d.getUint8(p++);let b=0;if(hi!==0xc0&&hi!==0xd0)b=d.getUint8(p++);
+    const key=ch*128+a;
+    if(hi===0x90&&b>0)(on[key]=on[key]||[]).push(tick);
+    else if(hi===0x80||(hi===0x90&&b===0)){const s=on[key]&&on[key].shift();if(s!==undefined&&ch!==9)raw.push({m:a,s,e:tick})}}
+  }
+  p=end;
+ }
+ tempos.sort((x,y)=>x.tick-y.tick);
+ const sec=tk=>{let s=0,lt=0,us=500000;for(const x of tempos){if(x.tick>=tk)break;s+=(x.tick-lt)*us/div/1e6;lt=x.tick;us=x.us}return s+(tk-lt)*us/div/1e6};
+ const notes=raw.filter(n=>n.m>=21&&n.m<=108).map(n=>({m:n.m,t:sec(n.s),d:Math.max(.08,sec(n.e)-sec(n.s))}));
+ if(!notes.length)throw new Error('Geen noten gevonden');
+ const t0=Math.min(...notes.map(n=>n.t));notes.forEach(n=>n.t-=t0);
+ return notes;
+}
+
+// ---------- staat ----------
+const $=id=>document.getElementById(id);
+const cv=$('cv'),cx=cv.getContext('2d'),stage=$('stage');
+let notes=[],groups=[],gi=0,clock=-2.5,playing=false,mode='wait',tempo=1,songEnd=1,lo=48,hi=83,kbOct=4,midiOn=false;
+let st={hit:0,wrong:0,streak:0,miss:0};
+const pressed=new Set(),flash={};
+let W=0,H=0,dpr=1;
+
+function load(list){
+ notes=list.map(n=>({...n,hit:false,miss:false})).sort((a,b)=>a.t-b.t||a.m-b.m);
+ groups=[];for(let i=0;i<notes.length;i++){const g=groups[groups.length-1];if(g&&notes[i].t-g.t<.04)g.idx.push(i);else groups.push({t:notes[i].t,idx:[i]})}
+ songEnd=Math.max(...notes.map(n=>n.t+n.d));
+ let mn=Math.min(...notes.map(n=>n.m)),mx=Math.max(...notes.map(n=>n.m));
+ lo=Math.floor(mn/12)*12;hi=Math.ceil((mx+1)/12)*12-1;if(hi-lo<23)hi=lo+23;
+ kbOct=Math.floor(mn/12)-1;
+ reset();
+}
+function reset(){
+ notes.forEach(n=>{n.hit=false;n.miss=false});gi=0;clock=-2.5;playing=false;
+ st={hit:0,wrong:0,streak:0,miss:0};$('done').classList.remove('show');
+ $('btnPlay').textContent='▶ Start';$('msg').style.display='';updStats();
+}
+function updStats(){
+ $('sHit').textContent=st.hit;$('sWrong').textContent=st.wrong+st.miss;$('sStreak').textContent=st.streak;
+ const tot=st.hit+st.wrong+st.miss;$('sAcc').textContent=tot?Math.round(st.hit/tot*100)+'%':'–';
+}
+
+// ---------- geluid ----------
+let ac=null;
+const wantSound=()=>{const v=$('sound').value;return v==='on'||(v==='auto'&&!midiOn)};
+function ensureAudio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==='suspended')ac.resume()}
+function tone(m,vel=.7){
+ if(!ac)return;const f=440*2**((m-69)/12),t=ac.currentTime;
+ const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.22*vel,t+.01);g.gain.exponentialRampToValueAtTime(.0008,t+1.6);
+ const o1=ac.createOscillator(),o2=ac.createOscillator(),g2=ac.createGain();
+ o1.type='triangle';o1.frequency.value=f;o2.type='sine';o2.frequency.value=f*2;g2.gain.value=.3;
+ o1.connect(g);o2.connect(g2).connect(g);g.connect(ac.destination);
+ o1.start(t);o2.start(t);o1.stop(t+1.7);o2.stop(t+1.7);
+}
+
+// ---------- invoer ----------
+function noteOn(m,vel=.7){
+ pressed.add(m);if(wantSound())tone(m,vel);
+ if(!playing||mode==='demo'){flash[m]={c:'#7aa7ff',u:performance.now()+150};return}
+ let ok=false;
+ if(mode==='wait'){
+  const g=groups[gi];
+  if(g&&g.t-clock<.35){const i=g.idx.find(i=>notes[i].m===m&&!notes[i].hit);if(i!==undefined){notes[i].hit=true;ok=true;if(g.idx.every(i=>notes[i].hit))gi++}}
+ }else{
+  const n=notes.find(n=>!n.hit&&!n.miss&&n.m===m&&Math.abs(n.t-clock)<.22);if(n){n.hit=true;ok=true}
+ }
+ if(ok){st.hit++;st.streak++}else{st.wrong++;st.streak=0}
+ flash[m]={c:ok?'#3ccf8e':'#ff5a5a',u:performance.now()+260};updStats();
+}
+function noteOff(m){pressed.delete(m)}
+
+const KMAP={KeyA:0,KeyW:1,KeyS:2,KeyE:3,KeyD:4,KeyF:5,KeyT:6,KeyG:7,KeyY:8,KeyH:9,KeyU:10,KeyJ:11,KeyK:12,KeyO:13,KeyL:14,KeyP:15,Semicolon:16,Quote:17};
+addEventListener('keydown',e=>{
+ if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
+ if(e.code==='Space'){e.preventDefault();togglePlay();return}
+ if(e.repeat)return;
+ if(e.code==='KeyZ'){kbOct=Math.max(0,kbOct-1);return}
+ if(e.code==='KeyX'){kbOct=Math.min(7,kbOct+1);return}
+ if(e.code in KMAP){ensureAudio();noteOn((kbOct+1)*12+KMAP[e.code])}
+});
+addEventListener('keyup',e=>{if(e.code in KMAP)noteOff((kbOct+1)*12+KMAP[e.code])});
+
+// ---------- Web MIDI (Roland FP-10) ----------
+function setMidi(names,err){
+ midiOn=names.length>0;$('midiPill').classList.toggle('on',midiOn);
+ $('midiTxt').textContent=midiOn?names.join(', ')+' verbonden':(err||'Geen piano gevonden');
+}
+async function connectMidi(){
+ if(!navigator.requestMIDIAccess){setMidi([],'Deze browser heeft geen Web MIDI (gebruik Chrome)');return}
+ try{
+  const acc=await navigator.requestMIDIAccess({sysex:false});
+  const bind=()=>{const names=[];acc.inputs.forEach(inp=>{names.push(inp.name||'MIDI-toestel');inp.onmidimessage=ev=>{
+   const [s,a,b]=ev.data,h=s&0xf0;
+   if(h===0x90&&b>0)noteOn(a,b/127);else if(h===0x80||(h===0x90&&b===0))noteOff(a)}});setMidi(names)};
+  bind();acc.onstatechange=bind;
+ }catch(e){setMidi([],'MIDI geblokkeerd hier: open de app los in Chrome')}
+}
+$('btnMidi').onclick=()=>{ensureAudio();connectMidi()};
+
+// ---------- klavier-geometrie ----------
+const isBlack=m=>[1,3,6,8,10].includes(m%12);
+let whites=[],wIdx={},ww=0,bw=0,keyTop=0,hitY=0;
+function layout(){
+ const r=stage.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=r.width;H=r.height;
+ cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0);
+ whites=[];wIdx={};for(let m=lo;m<=hi;m++)if(!isBlack(m)){wIdx[m]=whites.length;whites.push(m)}
+ ww=W/whites.length;bw=ww*.6;keyTop=H-Math.min(H*.24,ww*5.2);hitY=keyTop;
+}
+const kx=m=>isBlack(m)?(wIdx[m-1]+1)*ww-bw/2:wIdx[m]*ww;
+const kw=m=>isBlack(m)?bw:ww;
+new ResizeObserver(layout).observe(stage);
+
+stage.addEventListener('pointerdown',e=>{
+ ensureAudio();const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(y<keyTop)return;
+ let m=null;const bh=(H-keyTop)*.62;
+ if(y<keyTop+bh)for(let k=lo;k<=hi;k++)if(isBlack(k)&&x>=kx(k)&&x<=kx(k)+bw){m=k;break}
+ if(m===null){const i=Math.floor(x/ww);m=whites[Math.max(0,Math.min(whites.length-1,i))]}
+ noteOn(m);const up=()=>{noteOff(m);removeEventListener('pointerup',up)};addEventListener('pointerup',up);
+});
+
+// ---------- namen ----------
+const ABC=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],DO=['do','do#','re','re#','mi','fa','fa#','sol','sol#','la','la#','si'];
+const label=m=>{const v=$('names').value;return v==='off'?'':(v==='do'?DO:ABC)[m%12]};
+
+// ---------- tekenen ----------
+function rr(x,y,w,h,r){cx.beginPath();cx.roundRect?cx.roundRect(x,y,w,h,r):cx.rect(x,y,w,h)}
+function draw(){
+ const now=performance.now();cx.clearRect(0,0,W,H);
+ // lanen
+ for(let i=0;i<whites.length;i++){if(whites[i]%12===0){cx.fillStyle='#ffffff10';cx.fillRect(i*ww,0,1,keyTop)}}
+ const pps=keyTop/3.2;
+ const cur=mode==='wait'&&groups[gi]?groups[gi]:null;
+ for(const n of notes){
+  const y1=hitY-(n.t-clock)*pps,y0=y1-n.d*pps;if(y1<0||y0>keyTop)continue;
+  const x=kx(n.m)+1.5,w=kw(n.m)-3;
+  let c=isBlack(n.m)?'#e0644f':'#2bb3a3';
+  if(cur&&cur.idx.some(i=>notes[i]===n)&&!n.hit)c='#f2b84b';
+  if(n.hit)c='#3ccf8e';if(n.miss)c='#5b5663';
+  cx.globalAlpha=n.hit?.55:1;cx.fillStyle=c;rr(x,Math.max(y0,-10),w,Math.min(y1,keyTop)-Math.max(y0,-10),Math.min(6,w/3));cx.fill();
+  cx.globalAlpha=1;const L=label(n.m);
+  if(L&&w>14&&y1-y0>16){cx.fillStyle='#15131a';cx.font=`700 ${Math.min(14,w*.45)}px Manrope,sans-serif`;cx.textAlign='center';cx.fillText(L,x+w/2,Math.min(y1,keyTop)-6)}
+ }
+ // raaklijn
+ cx.fillStyle='#f2b84b';cx.fillRect(0,hitY-2,W,3);
+ // witte toetsen
+ const kh=H-keyTop;
+ for(const m of whites){const x=kx(m),f=flash[m]&&flash[m].u>now?flash[m].c:null;
+  cx.fillStyle=f||(pressed.has(m)?'#cfe0ff':'#f6f1e6');rr(x+1,keyTop+2,ww-2,kh-4,5);cx.fill();
+  const L=label(m);if(L&&ww>16){cx.fillStyle='#8a8290';cx.font=`600 ${Math.min(13,ww*.4)}px Manrope,sans-serif`;cx.textAlign='center';cx.fillText(m%12===0?L+(Math.floor(m/12)-1):L,x+ww/2,H-10)}}
+ for(let m=lo;m<=hi;m++)if(isBlack(m)){const f=flash[m]&&flash[m].u>now?flash[m].c:null;
+  cx.fillStyle=f||(pressed.has(m)?'#4a5a8a':'#1d1b22');rr(kx(m),keyTop,bw,kh*.62,4);cx.fill()}
+ if(cur&&clock>=cur.t-.001&&playing){cx.fillStyle='#f6f1e6';cx.font='700 15px Manrope,sans-serif';cx.textAlign='center';cx.fillText('Speel de gouden noot…',W/2,hitY-14)}
+ if(clock<0&&playing){cx.fillStyle='#f6f1e6';cx.font='800 56px Manrope,sans-serif';cx.textAlign='center';cx.fillText(Math.ceil(-clock),W/2,keyTop/2)}
+ $('prog').style.width=Math.max(0,Math.min(100,clock/songEnd*100))+'%';
+}
+
+// ---------- spellus ----------
+let last=performance.now();
+function loop(ts){
+ const dt=Math.min(.05,(ts-last)/1000);last=ts;
+ if(playing){
+  const step=dt*tempo;
+  if(mode==='wait'){const g=groups[gi];if(g&&clock+step>=g.t)clock=Math.max(clock,g.t);else clock+=step}
+  else{
+   clock+=step;
+   if(mode==='demo')while(groups[gi]&&groups[gi].t<=clock){for(const i of groups[gi].idx){notes[i].hit=true;flash[notes[i].m]={c:'#3ccf8e',u:performance.now()+notes[i].d*1000/tempo};tone(notes[i].m)}gi++}
+   else for(const n of notes)if(!n.hit&&!n.miss&&n.t<clock-.22){n.miss=true;st.miss++;st.streak=0;updStats()}
+  }
+  if(clock>songEnd+.8&&(mode!=='wait'||gi>=groups.length))finish();
+ }
+ draw();requestAnimationFrame(loop);
+}
+function finish(){
+ playing=false;$('btnPlay').textContent='▶ Start';
+ if(mode==='demo'){reset();return}
+ const tot=st.hit+st.wrong+st.miss,acc=tot?Math.round(st.hit/tot*100):0;
+ const stars=acc>=95?3:acc>=80?2:acc>=50?1:0;
+ $('stars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+ $('doneTitle').textContent=stars===3?'Perfect!':stars===2?'Goed gedaan!':stars===1?'Bijna!':'Blijven oefenen!';
+ let best=0;const key='pianoles-best:'+$('song').value+':'+mode;
+ try{best=+localStorage.getItem(key)||0;if(acc>best)localStorage.setItem(key,acc)}catch(e){}
+ $('doneTxt').textContent=`${acc}% nauwkeurig · ${st.hit} juist · ${st.wrong+st.miss} fout`+(best?` · vorig record ${best}%`:'');
+ $('done').classList.add('show');
+}
+function togglePlay(){
+ ensureAudio();
+ if(!playing&&clock>songEnd)reset();
+ playing=!playing;$('btnPlay').textContent=playing?'⏸ Pauze':'▶ Verder';$('msg').style.display='none';
+}
+
+// ---------- bediening ----------
+$('song').innerHTML=SONGS.map((s,i)=>`<option value="${i}">${s.n}</option>`).join('');
+$('song').onchange=()=>{const v=$('song').value;if(v==='file')return;const s=SONGS[+v];load(mel(s.s,s.bpm))};
+$('mode').onchange=()=>{mode=$('mode').value;reset()};
+$('tempo').oninput=()=>{tempo=$('tempo').value/100;$('tempoTxt').textContent=$('tempo').value+'%'};
+$('btnPlay').onclick=togglePlay;
+$('btnRestart').onclick=reset;
+$('btnAgain').onclick=()=>{reset();togglePlay()};
+$('file').onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{const list=parseMidi(await f.arrayBuffer());
+  let o=$('song').querySelector('option[value=file]');if(!o){o=document.createElement('option');o.value='file';$('song').appendChild(o)}
+  o.textContent='📄 '+f.name.replace(/\.midi?$/i,'');$('song').value='file';load(list);
+ }catch(err){$('msg').style.display='';$('msg').querySelector('b').textContent='Bestand niet gelezen';$('msg').querySelector('span').textContent=err.message}
+ e.target.value='';
+};
+
+layout();load(mel(SONGS[0].s,SONGS[0].bpm));connectMidi();requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
