@@ -126,6 +126,57 @@ try {
   await sleep(300);
   check((await text('.result-card h2')).length > 0, 'instaptest toont resultaat na stoppen');
 
+  // ---------- fase 2 ----------
+  await evaluate(`pianoles.store.update(s=>{for(const k of ['h1-l1','h1-l2','h1-l3','h1-l4','h1-l5','h1-l6','h1-l7','h1-ex'])s.lessons[k]={stars:2,status:'done'}})`);
+  // h2-l1: uitleg met handen, dan vingers aantikken
+  await go('#/les/h2-l1', 500);
+  check(await evaluate('document.querySelectorAll(".panel .hand-fig").length') === 2, 'vingernummers: twee handtekeningen');
+  await evaluate('document.querySelector("#lCtl button").click()');
+  await sleep(200);
+  for (let i = 0; i < 5; i++) {
+    const p = await text('#lPrompt');
+    const f = /vinger (\d)/.exec(p)?.[1];
+    await evaluate(`document.querySelector('.hand-fig.rh rect[data-finger="${f}"]').dispatchEvent(new MouseEvent('click',{bubbles:true}))`);
+    await sleep(800);
+  }
+  check((await text('#lPrompt')).includes('linkerhand'), 'vingers aantikken RH klaar, nu LH');
+
+  // h2-l3: C-positie RH met vingerplay en een stukje in fases
+  await evaluate(`pianoles.store.update(s=>{s.lessons['h2-l1']={stars:3,status:'done'};s.lessons['h2-l2']={stars:3,status:'done'}})`);
+  await go('#/les/h2-l3', 500);
+  await evaluate('document.querySelector("#lCtl button").click()');
+  await sleep(200);
+  for (const m of [60, 62, 64, 65, 67]) await note(m);
+  await sleep(900);
+  for (const m of [67, 65, 64, 62, 60]) await note(m);
+  await sleep(900);
+  check((await text('#lPrompt')).includes('Speel met'), 'vingerplay-stap gestart');
+  const RH = { 1: 60, 2: 62, 3: 64, 4: 65, 5: 67 };
+  for (let i = 0; i < 8; i++) {
+    const f = /vinger (\d)/.exec(await text('#lPrompt'))?.[1];
+    await note(RH[f], 800);
+  }
+  check((await text('#lPrompt')).includes('Luister'), 'stukje start met voorspelen');
+  await evaluate('[...document.querySelectorAll("#lCtl button")].find(b=>b.textContent.startsWith("Overslaan")).click()');
+  await sleep(2800);
+  check((await text('#lPrompt')).includes('eigen tempo'), 'daarna wachtmodus');
+  // noten op hun tel (70 bpm); de wachtmodus houdt de klok tegen tot de juiste noot komt
+  const beats = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12], pitches = [60, 62, 64, 65, 67, 67, 65, 64, 62, 60];
+  for (let i = 0; i < beats.length; i++) {
+    await note(pitches[i], 0);
+    if (i + 1 < beats.length) await sleep((beats[i + 1] - beats[i]) * 857 + 60);
+  }
+  await sleep(4500);
+  check(/Op tempo|100% juist/.test((await text('#lCount')) + (await text('#lFb'))), 'wachtmodus foutloos → door naar op tempo');
+  await go('#/', 300);
+
+  // Vrij spelen met vingerzetting (Toonladder C) toont de handlaag zonder fouten
+  await go('#/spelen', 400);
+  await evaluate('document.getElementById("btnPlay").click()');
+  await sleep(3000);
+  await note(60, 300);
+  await go('#/', 300);
+
   // Export/import van voortgang
   const json = await evaluate('pianoles.store.exportJSON()');
   await evaluate('pianoles.store.resetAll()');

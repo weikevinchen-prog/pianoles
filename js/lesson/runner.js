@@ -21,6 +21,7 @@ export function summarize(results) {
  * view: { stage, prompt, feedback, controls, counter, dots } (DOM-elementen + podium)
  * opts.onStep(i, n)  na elke stapwissel
  * opts.after(result, i) -> false om te stoppen (instaptest)
+ * opts.startAt      beginnen bij deze stap (0-gebaseerd)
  */
 export function createRunner(steps, view, opts = {}) {
   let aborted = false, subs = [], timers = [];
@@ -35,6 +36,10 @@ export function createRunner(steps, view, opts = {}) {
     view.feedback.className = 'feedback';
     view.counter.textContent = '';
     view.stage.clearMarks();
+    view.stage.setLayers([]);
+    view.stage.onFrame = null;
+    view.stage.overlay.innerHTML = '';
+    if (view.stageDefaults) view.stage.setOptions(view.stageDefaults);
   }
 
   function makeCtx() {
@@ -60,7 +65,7 @@ export function createRunner(steps, view, opts = {}) {
 
   async function start() {
     const results = [];
-    for (let i = 0; i < steps.length; i++) {
+    for (let i = Math.max(0, Math.min(steps.length - 1, opts.startAt || 0)); i < steps.length; i++) {
       if (aborted) return null;
       opts.onStep?.(i, steps.length);
       const step = steps[i];

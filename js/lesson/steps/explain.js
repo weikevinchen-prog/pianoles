@@ -1,10 +1,17 @@
-// Uitleg: tekst + gemarkeerde toetsen. Je mag vrij spelen; "Verder" (of spatie) gaat door.
+// Uitleg: tekst + gemarkeerde toetsen, optioneel een illustratie of een handpositie.
+// Je mag vrij spelen; "Verder" (of spatie) gaat door.
 import { C } from '../../ui/colors.js';
-import { setupStage, applyMarks } from './common.js';
+import { illustration } from '../../ui/illustrations.js';
+import { fmt } from '../../ui/dom.js';
+import { setupStage, applyMarks, showPanel, showHands } from './common.js';
 
 export default function explain(step, ctx) {
   const [lo, hi] = setupStage(step, ctx, { names: 'c' });
   applyMarks(step.show, ctx, lo, hi);
+  if (step.position) showHands(ctx, step.position, () => step.activeFingers || {});
+  if (step.illustration) {
+    showPanel(ctx, `<div class="illus">${illustration(step.illustration)}${step.caption ? `<p>${fmt(step.caption)}</p>` : ''}</div>`);
+  }
   ctx.prompt(ctx.fmt(step.text));
   return new Promise(resolve => {
     const btn = document.createElement('button');

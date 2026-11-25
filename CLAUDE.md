@@ -25,4 +25,5 @@ Piano-leerapp in de stijl van Simply Piano, voor één gebruiker. Die speelde vr
   2. Geef de gebruiker een korte testlijst voor aan de piano.
   3. Maak een git commit met een duidelijke boodschap. **Push pas als de gebruiker zegt dat het goed is.**
 - Nieuwe staptypes: module in `js/lesson/steps/`, registreren in `steps/index.js` én in `tests/step-types.mjs`, documenteren in de README.
-- Screenshots ter controle: Chrome headless met `--window-size=844,390` (iPhone liggend).
+- Screenshots ter controle: `node tests/shots.mjs <map> "#/route|acties"` (844×390 = iPhone liggend, alle lessen open; in Git Bash met `MSYS_NO_PATHCONV=1`). Bekijk ze altijd na UI-werk.
+- Lesstukjes (`piece`) hebben altijd vingerzetting op elke noot (de test controleert dat).

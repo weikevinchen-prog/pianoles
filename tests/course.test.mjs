@@ -6,6 +6,9 @@ import PROBES from '../js/data/placement.js';
 import STEP_TYPES_LIST from './step-types.mjs';
 import { flat, isUnlocked, recordLesson, firstOpen, courseStats, skipChapter } from '../js/lesson/course.js';
 import { parseRange, parseTargets, buildPiece, pcNum, noteNum } from '../js/core/notation.js';
+import { fivePosition } from '../js/player/handpos.js';
+
+const ILLU = ['zithoogte', 'ronde-vingers', 'polsen', 'schouders', 'hands'];
 
 function checkStep(s, where) {
   assert.ok(STEP_TYPES_LIST.includes(s.type), `${where}: onbekend staptype ${s.type}`);
@@ -13,7 +16,15 @@ function checkStep(s, where) {
   if (s.targets) assert.ok(parseTargets(s.targets, lo, hi).notes.length > 0, `${where}: geen doeltoetsen`);
   if (s.pool) for (const t of s.pool.split(/\s+/)) assert.ok(pcNum(t) !== null || noteNum(t), `${where}: ${t}`);
   for (const sh of s.show || []) parseTargets(sh.targets, lo, hi);
-  if (['explain', 'find', 'quiz'].includes(s.type) && s.type !== 'quiz') assert.ok(s.text, `${where}: tekst ontbreekt`);
+  if (['explain', 'find'].includes(s.type)) assert.ok(s.text, `${where}: tekst ontbreekt`);
+  for (const [h, spec] of Object.entries(s.position || {})) assert.equal(Object.keys(fivePosition(spec, h)).length, 5, `${where}: positie`);
+  if (s.type === 'piece') {
+    const p = buildPiece({ rh: s.rh, lh: s.lh }, { bpm: s.bpm || 80, meter: s.meter || [4, 4] });
+    assert.ok(p.notes.length > 0, `${where}: geen noten`);
+    assert.deepEqual(p.warnings, [], `${where}: ${p.warnings.join('; ')}`);
+    assert.ok(p.notes.every(x => x.finger), `${where}: lesstukjes hebben overal vingerzetting`);
+  }
+  if (s.illustration) assert.ok(ILLU.includes(s.illustration), `${where}: onbekende illustratie ${s.illustration}`);
 }
 
 test('lesdata is geldig en ids zijn uniek', () => {
@@ -63,7 +74,9 @@ test('gehaald examen of instaptest geeft hoofdstuk vrij als overgeslagen', () =>
   const prog = {};
   recordLesson(prog, 'h1-ex', { stars: 1, acc: 70 });
   assert.equal(prog['h1-l3'].status, 'skipped');
-  assert.equal(courseStats(prog).done, courseStats(prog).total);
+  assert.equal(courseStats(prog).done, COURSE.chapters[0].lessons.length);
+  assert.ok(isUnlocked('h2-l1', prog));
+  assert.ok(!isUnlocked('h2-l2', prog));
   const p2 = { 'h1-l1': { stars: 3, status: 'done' } };
   skipChapter(p2, 'h1');
   assert.equal(p2['h1-l1'].status, 'done');

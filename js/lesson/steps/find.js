@@ -4,7 +4,7 @@
 //   mode 'any'     één doeltoets volstaat
 import { parseTargets, pcOf } from '../../core/notation.js';
 import { C, MARK } from '../../ui/colors.js';
-import { setupStage } from './common.js';
+import { setupStage, showHands } from './common.js';
 
 export default function find(step, ctx) {
   const [lo, hi] = setupStage(step, ctx);
@@ -20,6 +20,14 @@ export default function find(step, ctx) {
   progress();
 
   const remaining = () => (mode === 'ordered' ? [targets[idx]] : targets.filter(m => !done.has(m)));
+  // Met een handpositie: de vinger voor de volgende noot licht op (bij 'ordered').
+  if (step.position) {
+    const pos = showHands(ctx, step.position, () => {
+      if (mode !== 'ordered' || idx >= targets.length) return {};
+      for (const h of Object.keys(pos)) for (let f = 1; f <= 5; f++) if (pos[h][f] === targets[idx]) return { [h]: [f] };
+      return {};
+    });
+  }
   function hint() {
     for (const m of remaining()) if (m >= lo && m <= hi) ctx.stage.mark(m, MARK.hint);
   }

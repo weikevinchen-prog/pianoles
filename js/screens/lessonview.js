@@ -14,9 +14,11 @@ export function lessonView(root) {
     <div class="stage-wrap" id="lWrap"></div>
   </section>`;
   const q = s => root.querySelector(s);
-  const stage = createStage(q('#lWrap'), { keyRatio: 0.8, keyAspect: 6.5, keyNames: 'none' });
+  const stageDefaults = { keyRatio: 0.8, keyAspect: 6.5, keyNames: 'none' };
+  const stage = createStage(q('#lWrap'), { ...stageDefaults });
   return {
     stage,
+    stageDefaults,
     prompt: q('#lPrompt'),
     counter: q('#lCount'),
     feedback: q('#lFb'),

@@ -8,6 +8,7 @@ import { ensureAudio, tone } from '../core/audio.js';
 import { createStage } from '../player/stage.js';
 import { createEngine } from '../player/engine.js';
 import { fallingLayer } from '../player/falling.js';
+import { handLayer, engineHands } from '../player/handlayer.js';
 import { fitRange } from '../player/keyboard.js';
 import { C } from '../ui/colors.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
@@ -60,7 +61,7 @@ export function render(root) {
     });
     const [lo, hi] = fitRange(notes);
     stage.setRange(lo, hi);
-    stage.setLayers([fallingLayer(engine)]);
+    stage.setLayers([fallingLayer(engine), handLayer(engineHands(engine), { onKeys: true })]);
     q('#msg').style.display = '';
     q('#done').classList.remove('show');
   }

@@ -169,3 +169,19 @@ ol{padding-left:22px;margin:0}ol li{margin-bottom:4px}
   body:has(.screen.fill) .rotate-hint{display:block;flex:none;text-align:center;font-size:13px;padding:6px;background:var(--gold);color:#1b1820;font-weight:700}
 }
 @media(prefers-reduced-motion:reduce){.pill.on .dot,.bigdot.connected{box-shadow:none}.tile{transition:none}}
+
+/* ---------- fase 2: panelen, handen, illustraties ---------- */
+.panel{position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;background:var(--stage);color:#f6f1e6;padding:10px;overflow:hidden}
+.panel>*{flex:1;min-height:0}
+.illus{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;justify-content:center}
+.illus-svg{flex:1;min-height:0;width:100%;max-width:560px;height:100%;color:#f6f1e6}
+.illus p{margin:0;color:#bdb5c4;font-size:14px;text-align:center}
+.hands-pair{display:flex;justify-content:center;align-items:center;gap:clamp(12px,6vw,64px);width:100%;height:100%}
+.hand-fig{margin:0;height:100%;max-height:300px;display:flex;flex-direction:column;align-items:center;min-height:0}
+.hand-fig svg{height:100%;min-height:0;width:auto;max-width:42vw;overflow:visible}
+.hand-fig figcaption{font-size:13px;font-weight:700;color:#bdb5c4}
+.hand-fig .finger[role=button],.hand-fig .num[data-finger]{cursor:pointer}
+.hand-fig .finger[role=button]:hover{filter:brightness(1.15)}
+.hand-fig .finger:focus-visible{outline:none;stroke:var(--gold);stroke-width:5;stroke-opacity:1}
+.phase{display:inline-block;margin-top:2px;font-size:.92em;color:var(--muted);font-weight:700}
+.feedback .stars.small{letter-spacing:1px}

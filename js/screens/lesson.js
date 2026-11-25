@@ -5,7 +5,8 @@ import { createRunner } from '../lesson/runner.js';
 import { esc, setTitle, starStr } from '../ui/dom.js';
 import { lessonView } from './lessonview.js';
 
-export function render(root, [id]) {
+// Route: #/les/<id> of #/les/<id>/<stapnummer> (vanaf die stap beginnen)
+export function render(root, [id, stepNo]) {
   const x = findLesson(id);
   if (!x) {
     root.innerHTML = `<div class="page"><h2>Les niet gevonden</h2><a class="btn" href="#/cursus">Naar de cursus</a></div>`;
@@ -22,7 +23,7 @@ export function render(root, [id]) {
   function start() {
     view?.stage.destroy();
     view = lessonView(root);
-    runner = createRunner(lesson.steps, view, { onStep: (i, n) => view.setDots(i, n) });
+    runner = createRunner(lesson.steps, view, { onStep: (i, n) => view.setDots(i, n), startAt: stepNo ? +stepNo - 1 : 0 });
     runner.start().then(res => { if (res) finish(res); }).catch(e => {
       console.error(e);
       view.prompt.textContent = 'Er liep iets mis in deze les: ' + e.message;

@@ -2,6 +2,8 @@
 import { parseRange, parseTargets, noteName } from '../../core/notation.js';
 import { MARK } from '../../ui/colors.js';
 import { textStyle } from '../../ui/dom.js';
+import { initialPositions } from '../../player/handpos.js';
+import { handLayer } from '../../player/handlayer.js';
 
 /** Zet bereik en toetsnamen van het podium volgens de stap. */
 export function setupStage(step, ctx, { def = [48, 71], names = 'none' } = {}) {
@@ -34,3 +36,28 @@ export const pick = (arr, avoid) => {
 };
 
 export const tokens = s => String(s || '').trim().split(/\s+/).filter(Boolean);
+
+// ---------- fase 2: panelen, handen ----------
+
+/** Paneel over het podium (illustraties, handtekeningen). Wordt na de stap automatisch weggehaald. */
+export function showPanel(ctx, html, cls = '') {
+  const d = document.createElement('div');
+  d.className = 'panel ' + cls;
+  d.innerHTML = html;
+  ctx.stage.overlay.appendChild(d);
+  return d;
+}
+
+/** Kleine hand(en) boven het klavier. position: {rh: 'C4', lh: 'C3'}; getActive() -> {rh: [vingers], lh: [...]} */
+export function showHands(ctx, position, getActive = () => ({})) {
+  const pos = initialPositions(position);
+  ctx.stage.setLayers([handLayer(() => {
+    const a = getActive() || {};
+    const st = {};
+    for (const h of ['rh', 'lh']) if (pos[h]) st[h] = { map: pos[h], active: new Set(a[h] || []) };
+    return st;
+  })]);
+  return pos;
+}
+
+export const HAND_NAME = { rh: 'rechterhand', lh: 'linkerhand' };

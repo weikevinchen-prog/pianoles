@@ -33,8 +33,11 @@ Als er MIDI binnenkomt, speelt de app zelf geen geluid (de piano klinkt al). Voo
 
 ```bash
 node --test "tests/*.test.mjs"   # unit-tests: notatie, MIDI-parser, speelmotor, cursuslogica, opslag
-node tests/smoke.mjs             # rooktest in headless Chrome: alle schermen + een les + vrij spelen, meldt JS-fouten
+node tests/smoke.mjs             # rooktest in headless Chrome: alle schermen + lessen + vrij spelen, meldt JS-fouten
+node tests/shots.mjs <map> "#/les/h2-l3/5|click:#lCtl button|wait:2000"   # screenshots (844×390), alle lessen open
 ```
+
+In Git Bash op Windows zet je `MSYS_NO_PATHCONV=1` voor het `shots`-commando. Anders worden de `#/…`-paden omgezet.
 
 Je hebt alleen Node (18+), Python en Chrome of Edge nodig, geen npm.
 
@@ -45,7 +48,9 @@ index.html              schil: bovenbalk + <main id="app">
 css/app.css             alle stijl (landscape-layout voor iPhone)
 js/main.js              opstart + hash-router (#/cursus, #/les/h1-l3, …)
 js/core/                midi, input (MIDI + toetsenbord + touch), audio, notation, midifile, storage, stats, events
-js/player/              engine (wacht/tempo/voorspelen + scoring), stage (canvas + klavier), falling (vallende noten), keyboard
+js/player/              engine (wacht/tempo/voorspelen + scoring), stage (canvas + klavier), falling (vallende noten), keyboard,
+                        handpos (vingerposities), handlayer (kleine hand op/boven het klavier)
+js/ui/                  colors, dom, hands (SVG-handen), illustrations (houdingskaartjes)
 js/lesson/              course (vergrendeling, sterren), runner (stappen afspelen), steps/ (staptypes)
 js/screens/             één module per scherm
 js/data/                course.js (lessen), songs.js (liedjes), placement.js (instaptest)
@@ -112,8 +117,24 @@ Tekst: `**vet**`, `{C}` = notennaam volgens de instelling (C of do), `{C4}` = me
 | `find` | toetsen zoeken | `targets` (`'C'` = alle C's in bereik, `'C4'` = precies die), `mode: all \| ordered \| any`, `hint`, `hintAfter` (standaard 2) |
 | `quiz` | "Speel een F" (eender welk octaaf) of "Speel E4" | `pool: 'C D E'` of `'C4 E4'`, `rounds`, `text` met `{X}` |
 | `name` | een toets licht op, kies de naam | `pool`, `rounds` |
+| `fingers` | vingernummers op de handtekening | `hand: rh \| lh \| both`, `mode: tap` (tik vinger N aan) of `mode: name` (welk nummer heeft de gouden vinger?), `rounds` |
+| `fingerplay` | "Speel met vinger 3 van je rechterhand" | `position`, `pool: 'R1 R3 L5'` (standaard alle vingers), `rounds` |
+| `piece` | stukje met vallende noten, in fases | `rh`, `lh` (notenstring met vingers), `bpm`, `meter`, `phases: ['demo', 'wait', 'tempo']`, `hands: both \| rh \| lh` (de andere hand speelt de app), `position`, `range` |
 
-Gemeenschappelijk: `range: 'C3 B4'` (zichtbaar klavier), `names: 'none' | 'c' | 'auto'` (namen op de toetsen).
+Gemeenschappelijk:
+- `range: 'C3 B4'`: het zichtbare klavier.
+- `names: 'none' | 'c' | 'auto'`: namen op de toetsen.
+- `position: { rh: 'C4', lh: 'C3' }`: handpositie. Er verschijnt dan een kleine hand met vingernummers boven het klavier. `'C4'` is de laagste toets van een 5-vingerpositie op witte toetsen. Bij de rechterhand ligt daar de duim, bij de linkerhand de pink. Je kunt ook 5 noten geven: `'D4 E4 F#4 G4 A4'`.
+- `explain` kan ook `illustration` tonen: `hands`, `zithoogte`, `schouders`, `ronde-vingers` of `polsen` (zie `js/ui/illustrations.js`).
+
+**De fases van `piece`:**
+- `demo`: de app speelt voor. Je kunt dit overslaan.
+- `wait`: de noten wachten op jou. Met de knop "Meteen op tempo" sla je deze fase over.
+- `tempo`: je speelt op tempo mee.
+
+Na een oefenfase met minstens 2 sterren gaat de app vanzelf door naar de volgende fase. De score van de stap is je beste poging in de laatste beoordeelde fase. In elk blokje staat het vingernummer. Tijdens het spelen staan de vingertoppen op de toetsen, en de vinger die nu moet spelen licht goud op. Als de vingerzetting dat vraagt (bv. duim onderdoor), schuift de hand mee.
+
+**Een les vanaf een bepaalde stap starten:** `#/les/h2-l3/5` begint bij stap 5. Handig om te testen.
 
 **Sterren:** juist ÷ (juist + fout) over alle beoordeelde stappen. ≥ 95% = 3, ≥ 80% = 2, ≥ 50% = 1. Vanaf 1 ster gaat de volgende les open.
 
@@ -126,7 +147,7 @@ Alles staat in `localStorage` onder de sleutel `pianoles:v1`. Onder **Instelling
 ## Stand van zaken
 
 - [x] Fase 1: structuur, verbinden, kalibratie, hoofdstuk 1 "Het klavier terugvinden", instaptest-skelet
-- [ ] Fase 2: handen en vingerzetting
+- [x] Fase 2: handen en vingerzetting, hoofdstuk 2 "Handen en houding"
 - [ ] Fase 3: volledige cursus + notenbalk (VexFlow)
 - [ ] Fase 4: dagelijkse opwarming + metronoom
 - [ ] Fase 5: liedjesbibliotheek + oefentools
